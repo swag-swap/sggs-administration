@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Registration</h1>  
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="button" id="get-otp-btn">Get OTP</button>
+        <button type="submit">Register</button>
+    </form>
+    <script> 
+        document.getElementById('get-otp-btn').addEventListener('click', function() {
+            var email = document.getElementById('id_email').value;
+            fetch('/get_otp/?email=' + email, {
+                method: 'GET',
+            })
+            .then(async function(response) {
+                if (!response.ok) {
+                    throw new Error('Failed to send OTP');
+                }
+                const responseData = await response.json();
+                if (responseData.message) {
+                    throw new Error(responseData.message);
+                }
+                alert('OTP sent to your email.');
+            })
+            .catch(function(error) {
+                alert('Failed to send OTP: ' + error.message);
+            });
+        });
+
+        document.getElementById('register-btn').addEventListener('click', function() {
+            var email = document.getElementById('id_email').value;
+            var role = document.getElementById('id_role').value;
+            var otp = document.getElementById('id_otp').value;  
+            console.log(email, role, otp);
+            fetch('/register/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    email: email,
+                    role: role,
+                    otp: otp
+                })
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Failed to register');
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                console.log(data);
+                if (data.success) {
+                    alert('Registration successful!');
+                } else {
+                    alert('Registration failed: ' + data.errors);
+                }
+            })
+            .catch(function(error) {
+                alert('Registration failed catch: ' + error.message);
+            });
+        }); 
+    </script>
+</body>
+</html>

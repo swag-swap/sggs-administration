@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Approval</title>
+    <!-- Include any necessary CSS stylesheets -->
+    <style>
+        /* Add your custom CSS styles here */
+    </style>
+</head>
+<body>
+    <h1>Notification Approval</h1>
+    {% if notifications %}
+    <ul>
+        {% for notification in notifications %}
+        <li>
+            {{ notification.message }}
+            <form id="approve-form-{{ notification.id }}" class="approve-form" action="{% url 'approve_notification' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="notification_id" value="{{ notification.id }}">
+                <button type="submit" name="action" value="approve">Approve</button>
+            </form>
+            <form id="reject-form-{{ notification.id }}" class="reject-form" action="{% url 'approve_notification' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="notification_id" value="{{ notification.id }}">
+                <button type="submit" name="action" value="reject">Reject</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No notifications to display.</p>
+    {% endif %}
+    <!-- Include any necessary JavaScript scripts -->
+    <script>
+        // Add your custom JavaScript logic here
+    </script>
+</body>
+</html>

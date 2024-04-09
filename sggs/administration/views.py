@@ -66,13 +66,13 @@ def get_otp(request):
                 otp_instance.delete() 
         digits = "0123456789" 
         otp = ''.join(random.choice(digits) for _ in range(6))  
-        # send_mail(
-        #     'OTP for SGGS Administration!!',
-        #     f'Your OTP for registration is: {otp}',
-        #     'admin@sggs.ac.in', 
-        #     [email],
-        #     fail_silently=False,
-        # )
+        send_mail(
+            'OTP for SGGS Administration!!',
+            f'Your OTP for registration is: {otp}',
+            'admin@sggs.ac.in', 
+            [email],
+            fail_silently=False,
+        )
         OTP.objects.create(email=email, otp=otp)
         return JsonResponse({'success': True, 'message': 'New OTP generated and sent to your email.'})
     return JsonResponse({'success': False})
@@ -180,6 +180,15 @@ def edit_administrator_detail(request):
         form = AdministratorForm(instance=administrator_instance)
 
     return render(request, 'administration/edit_administrator_detail.html', {'form': form})
+
+@login_required
+def home(request):
+    if request.user.is_administrator == 1:
+        return render(request, 'administration/home.html', {'is_administration': True, 'user': request.user})
+    else:
+        return render(request, 'base/404.html')
+
+
 
 #Notifications
 

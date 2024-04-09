@@ -1,6 +1,8 @@
-from django.db import models
+from django.db import models, connection
 from django.contrib.auth.models import AbstractUser, Group
 from django.utils import timezone
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 import random
 
 class CustomUser(AbstractUser):
@@ -60,8 +62,31 @@ class Administrator(models.Model):
 class ClassSession(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE) 
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    year = models.IntegerField()
     start_date = models.DateField()
     end_date = models.DateField()
+
+@receiver(post_save, sender=ClassSession)
+def register_attendance_table_admin(sender, instance, created, **kwargs):
+    if created:
+        subject = instance.subject.name  # Replace spaces with underscores
+        semester = instance.semester.name
+        year = str(instance.year)
+        table_name = f"{subject}_{semester}_{year}"
+        cursor = connection.cursor()
+        try:
+            cursor.execute(f"""
+                CREATE TABLE IF NOT EXISTS {table_name} (
+                    id SERIAL PRIMARY KEY,
+                    student_id INTEGER REFERENCES auth_user(id),
+                    date DATE,
+                    is_present BOOLEAN
+                );
+            """)
+            print(f"Creating the table {table_name}...")
+        except Exception as e:
+            print(f"Error creating table {table_name}: {e}")
 
 class Notification(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')

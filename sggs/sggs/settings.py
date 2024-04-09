@@ -125,8 +125,12 @@ USE_L10N = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR.parent/ "local-cdn" ] 
-STATIC_ROOT = BASE_DIR.parent/ "local-cdn" / "static"
+STATICFILES_DIRS = [BASE_DIR/ "templates" ] 
+STATIC_ROOT = BASE_DIR/ "templates" / "static"
+
+# STATIC_URL = '/static/'
+# STATICFILES_DIRS = [BASE_DIR.parent/ "local-cdn" ] 
+# STATIC_ROOT = BASE_DIR.parent/ "local-cdn" / "static"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR.parent/ "local-cdn" / "media" 
 

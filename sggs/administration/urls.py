@@ -13,9 +13,8 @@ urlpatterns = [
     path('teacher/', include("teacher.urls"), name="teacher"),
     path('student/', include("student.urls"), name="student"), 
 
-    # path('home/', views.home, name='admin_home'),
+    path('home/', views.home, name='admin_home'),
     # path('edit/profile/', views.edit_profile, name='admin_edit_profile'),
-    # path('view/attendence/', views.view_attendence, name='admin_view_attendence'),
     # path('notify/teacher/', views.notify_teacher, name='admin_notify_teacher'),
     # path('notify/student/', views.notify_student, name='admin_notify_student'),
     # path('add/teacher/', views.add_teacher, name='admin_add_teacher'),
@@ -26,5 +25,6 @@ urlpatterns = [
     # path('manage/session/', views.manage_session, name='admin_manage_session'), 
     # path('view/notifications/', views.view_notifications, name='teacher_view_notifications'),
     # path('feedback/', views.feedback, name='teacher_feedback'), 
+    # path('view/attendence/', views.view_attendence, name='admin_view_attendence'),
 
 ]

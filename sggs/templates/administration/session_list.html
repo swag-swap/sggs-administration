@@ -1,0 +1,31 @@
+{% extends "base.html" %} 
+{% block content %}
+<div class="container">
+    <h1>Session List</h1>
+
+    <!-- Display filter form -->
+    <form method="GET">
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary mr-2">Filter</button>
+    </form>
+
+    <!-- Display sessions -->
+    <!-- <ul>
+        {% for session in sessions %}
+            <li>{{ session }}</li>
+        {% endfor %}
+    </ul> -->
+    <ul>
+        {% for session in sessions %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>{{ session.semester.department.name }} - {{ session.subject.name }} - Year: {{ session.year }}</span>
+            <div class="d-flex flex-wrap">
+                <a href="{% url 'admin_edit_session' session.id %}" class="btn btn-primary mr-2">Edit</a>
+                <a href="{% url 'admin_delete_session' session.id %}" class="btn btn-danger">Delete</a>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% endblock content %}

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Student, Department, Semester, Fee, CustomUser, OTP, Teacher, Administrator
+from .models import Student, Department, Semester, Fee, CustomUser, OTP, Teacher, Administrator, ClassSession, Subject
 
 class RegistrationForm(forms.ModelForm):
     ROLE_CHOICES = [
@@ -90,3 +90,30 @@ class AdministratorForm(forms.ModelForm):
     class Meta:
         model = Administrator
         fields = ['departments']
+
+class ClassSessionForm(forms.ModelForm):
+    class Meta:
+        model = ClassSession
+        fields = ['subject', 'teacher', 'semester', 'year', 'start_date', 'end_date']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['subject'].label = 'Subject'
+        self.fields['teacher'].label = 'Teacher'
+        self.fields['semester'].label = 'Semester' 
+
+class SessionFilterForm(forms.Form):
+    department = forms.ModelChoiceField(queryset=Department.objects.all(), required=False)
+    semester = forms.ModelChoiceField(queryset=Semester.objects.all(), required=False)
+    subject = forms.ModelChoiceField(queryset=Subject.objects.all(), required=False)
+
+class SubjectForm(forms.ModelForm):
+    class Meta:
+        model = Subject
+        fields = ['name']
+
+class DepartmentForm(forms.ModelForm):
+    class Meta:
+        model = Department
+        fields = ['name']
+

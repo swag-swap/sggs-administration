@@ -1,0 +1,35 @@
+{% extends "base.html" %} 
+{% block content %}
+<div class="container">
+    <h2>Add Session</h2>
+    <form method="post">
+        {% csrf_token %} 
+        <div class="form-group">
+            {{ form.subject.label_tag }}
+            {{ form.subject }}
+        </div>
+        <div class="form-group">
+            {{ form.teacher.label_tag }}
+            {{ form.teacher }}
+        </div>
+        <div class="form-group">
+            {{ form.semester.label_tag }}
+            {{ form.semester }}
+        </div>
+        <div class="form-group">
+            {{ form.year.label_tag }}
+            {{ form.year }}
+        </div>
+        <div class="form-group">
+            {{ form.start_date.label_tag }}
+            {{ form.start_date }}
+        </div>
+        <div class="form-group">
+            {{ form.end_date.label_tag }}
+            {{ form.end_date }}
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+
+{% endblock content %}

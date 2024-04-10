@@ -17,7 +17,7 @@
     <div>
         <!-- Nav Item - Dashboard -->
         <li class="nav-item active">
-            <a class="nav-link" href="index.html">
+            <a class="nav-link" href="{% url 'admin_home' %}">
                 <i class="fas fa-fw fa-tachometer-alt"></i>
                 <span>Dashboard</span></a>
         </li>
@@ -32,28 +32,42 @@
 
         <!-- session  -->
         <li class="nav-item">
-            <a class="nav-link" href="tables.html">
+            <a class="nav-link" href="{% url 'admin_session_list' %}">
                 <i class="fas fa-fw fa-table"></i>
-                <span>Add Session</span></a>
+                <span>List of Session</span></a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="tables.html">
+            <a class="nav-link" href="{% url 'admin_add_session'%}">
                 <i class="fas fa-fw fa-table"></i>
-                <span>Edit Session</span></a>
-        </li>
+                <span>Add Session</span></a>
+        </li> 
+
 
         <!-- Subject -->
         <li class="nav-item">
-            <a class="nav-link" href="tables.html">
+            <a class="nav-link" href="{% url 'admin_subject_list'%}">
                 <i class="fas fa-fw fa-table"></i>
-                <span>Add subject</span></a>
+                <span>List of Subjects</span></a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="tables.html">
+            <a class="nav-link" href="{% url 'admin_subject_add'%}">
                 <i class="fas fa-fw fa-table"></i>
-                <span>Edit Subject</span></a>
+                <span>Add Subject</span></a>
+        </li>
+
+        <!-- Department -->
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_department_list'%}">
+                <i class="fas fa-fw fa-table"></i>
+                <span>List of Departments</span></a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_department_add'%}">
+                <i class="fas fa-fw fa-table"></i>
+                <span>Add Department</span></a>
         </li>
 
 

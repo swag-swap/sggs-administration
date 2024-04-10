@@ -4,9 +4,9 @@ from django.contrib import messages
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from .forms import StudentForm, RegistrationForm, LoginForm, TeacherForm, AdministratorForm
+from .forms import StudentForm, RegistrationForm, LoginForm, TeacherForm, AdministratorForm, ClassSessionForm, SubjectForm, DepartmentForm, SessionFilterForm
 from django.http import JsonResponse, QueryDict
-from .models import CustomUser, Administrator, Student, Notification, OTP, Teacher
+from .models import CustomUser, Administrator, Student, Notification, OTP, Teacher, ClassSession, Subject, Department
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login  as auth_login
 from django.contrib.auth import logout as auth_logout
@@ -66,13 +66,13 @@ def get_otp(request):
                 otp_instance.delete() 
         digits = "0123456789" 
         otp = ''.join(random.choice(digits) for _ in range(6))  
-        send_mail(
-            'OTP for SGGS Administration!!',
-            f'Your OTP for registration is: {otp}',
-            'admin@sggs.ac.in', 
-            [email],
-            fail_silently=False,
-        )
+        # send_mail(
+        #     'OTP for SGGS Administration!!',
+        #     f'Your OTP for registration is: {otp}',
+        #     'admin@sggs.ac.in', 
+        #     [email],
+        #     fail_silently=False,
+        # )
         OTP.objects.create(email=email, otp=otp)
         return JsonResponse({'success': True, 'message': 'New OTP generated and sent to your email.'})
     return JsonResponse({'success': False})
@@ -188,7 +188,152 @@ def home(request):
     else:
         return render(request, 'base/404.html')
 
+@login_required
+def session_add(request):
+    if request.user.is_administrator == 1:
+        if request.method == 'POST':
+            form = ClassSessionForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect('admin_session_list')  # Assuming you have a URL named 'session_list'
+        else:
+            form = ClassSessionForm()
+        return render(request, 'administration/session_add.html', {'is_administration': True, 'user': request.user,'form': form})
+    else:
+        return render(request, 'base/404.html')
+    
+def session_edit(request, session_id):
+    if request.user.is_administrator == 1:
+        session = get_object_or_404(ClassSession, id=session_id)
+        if request.method == 'POST':
+            form = ClassSessionForm(request.POST, instance=session)
+            if form.is_valid():
+                form.save()
+                return redirect('admin_session_list')  # Redirect to session list page
+        else:
+            form = ClassSessionForm(instance=session)
+        return render(request, 'administration/session_edit.html', {'is_administration': True, 'user': request.user,'form': form})
+    else:
+        return render(request, 'base/404.html')
 
+def session_delete(request, session_id):
+    if request.user.is_administrator == 1:
+        session = get_object_or_404(ClassSession, id=session_id)
+        if request.method == 'POST':
+            session.delete()
+            return redirect('admin_session_list')  # Redirect to session list page
+        return render(request, 'administration/session_delete.html', {'is_administration': True, 'user': request.user,'session': session})
+    else:
+        return render(request, 'base/404.html')
+
+def session_list(request):
+    if request.user.is_administrator == 1:
+        form = SessionFilterForm(request.GET)
+        sessions = ClassSession.objects.all()
+
+        if form.is_valid():
+            department = form.cleaned_data.get('department')
+            semester = form.cleaned_data.get('semester')
+            subject = form.cleaned_data.get('subject')
+
+            if department:
+                sessions = sessions.filter(semester__department=department)
+            if semester:
+                sessions = sessions.filter(semester=semester)
+            if subject:
+                sessions = sessions.filter(subject=subject)
+        return render(request, 'administration/session_list.html', {'is_administration': True, 'user': request.user,'sessions': sessions, 'form': form})
+    else:
+        return render(request, 'base/404.html')
+
+def subject_add(request):
+    if request.user.is_administrator == 1:
+        if request.method == 'POST':
+            form = SubjectForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect('admin_subject_list')  # Redirect to session list page after adding subject
+        else:
+            form = SubjectForm()
+        return render(request, 'administration/subject_add.html', {'is_administration': True, 'user': request.user,'form': form})
+    else:
+        return render(request, 'base/404.html')
+
+def subject_edit(request, subject_id):
+    if request.user.is_administrator == 1:
+        subject = get_object_or_404(Subject, pk=subject_id)
+        if request.method == 'POST':
+            form = SubjectForm(request.POST, instance=subject)
+            if form.is_valid():
+                form.save()
+                return redirect('admin_subject_list')  # Redirect to subject list page
+        else:
+            form = SubjectForm(instance=subject)
+        return render(request, 'administration/subject_edit.html', {'is_administration': True, 'user': request.user,'form': form})
+    else:
+        return render(request, 'base/404.html')
+
+def subject_delete(request, subject_id):
+    if request.user.is_administrator == 1:
+        subject = get_object_or_404(Subject, pk=subject_id)
+        if request.method == 'POST':
+            subject.delete()
+            return redirect('admin_subject_list')  # Redirect to subject list page
+        return render(request, 'administration/subject_delete.html', {'is_administration': True, 'user': request.user,'subject': subject})
+    else:
+        return render(request, 'base/404.html')
+
+def subject_list(request):
+    if request.user.is_administrator == 1:
+        subjects = Subject.objects.all()
+        return render(request, 'administration/subject_list.html', {'is_administration': True, 'user': request.user,'subjects': subjects})
+    else:
+        return render(request, 'base/404.html')
+
+
+def department_add(request):
+    if request.user.is_administrator == 1:
+        if request.method == 'POST':
+            form = DepartmentForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect('admin_department_list')  # Redirect to department list page
+        else:
+            form = DepartmentForm()
+        return render(request, 'administration/department_add.html', {'is_administration': True, 'user': request.user,'form': form})
+    else:
+        return render(request, 'base/404.html')
+
+def department_edit(request, department_id):
+    if request.user.is_administrator == 1:
+        department = get_object_or_404(Department, pk=department_id)
+        if request.method == 'POST':
+            form = DepartmentForm(request.POST, instance=department)
+            if form.is_valid():
+                form.save() 
+                return redirect('admin_department_list')  # Redirect to department list page
+        else:
+            form = DepartmentForm(instance=department)
+        return render(request, 'administration/department_edit.html', {'is_administration': True, 'user': request.user,'form': form})
+    else:
+        return render(request, 'base/404.html')
+
+def department_delete(request, department_id):
+    if request.user.is_administrator == 1:
+        department = get_object_or_404(Department, pk=department_id)
+        if request.method == 'POST':
+            department.delete()
+            return redirect('admin_department_list')  # Redirect to department list page
+        return render(request, 'administration/department_delete.html', {'is_administration': True, 'user': request.user,'department': department})
+    else:
+        return render(request, 'base/404.html')
+
+def department_list(request):
+    if request.user.is_administrator == 1:
+        departments = Department.objects.all()
+        return render(request, 'administration/department_list.html', {'is_administration': True, 'user': request.user,'departments': departments})
+    else:
+        return render(request, 'base/404.html')
 
 #Notifications
 
@@ -214,7 +359,7 @@ def send_approval_notification(model, role):
                     )
                 logger.info(f"Notification email sent to {admin_email}")
 
-            elif (role == 'teacher'):
+            if (role == 'teacher'):
                 existing_notification = Notification.objects.filter(teacher=model).exists()
 
                 if not existing_notification:
@@ -224,7 +369,7 @@ def send_approval_notification(model, role):
                         teacher=model
                     )
                 logger.info(f"Notification email sent to {admin_email}")
-            elif (role == 'administrator'):
+            if (role == 'administrator'):
                 existing_notification = Notification.objects.filter(administrator=model).exists()
 
                 if not existing_notification:

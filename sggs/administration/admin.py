@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db import models, connection
 from .models import CustomUser, Subject, Department, Teacher, Student, Semester, Administrator, Fee, ClassSession, Notification, OTP
 
 admin.site.register(CustomUser)

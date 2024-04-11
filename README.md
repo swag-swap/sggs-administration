@@ -49,3 +49,15 @@ This website is the administration website for the SGGS college management. Ther
     ```
     python3 manage.py collectstatic
     ```
+
+## Notification numbers
+1) Teacher Profile Update Notification:  
+2) New Teacher Request Notification:  
+3) New Student Enrollment Notification:  
+4) Fee Payment Reminder Notification:  
+5) Class Session Notification:  
+6) Exam Schedule Notification:  
+7) Attendance Notification:  
+8) Assignment Submission Notification:  
+9) Grading Notification: 
+10) System Maintenance Notification:

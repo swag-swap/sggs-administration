@@ -94,13 +94,15 @@ class AdministratorForm(forms.ModelForm):
 class ClassSessionForm(forms.ModelForm):
     class Meta:
         model = ClassSession
-        fields = ['subject', 'teacher', 'semester', 'year', 'start_date', 'end_date']
+        fields = ['department', 'semester', 'subject', 'teacher', 'year', 'start_date', 'end_date']
+        # fields = ['subject', 'teacher', 'semester','department', 'year', 'start_date', 'end_date']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['subject'].label = 'Subject'
         self.fields['teacher'].label = 'Teacher'
         self.fields['semester'].label = 'Semester' 
+        self.fields['department'].label = 'Department' 
 
 class SessionFilterForm(forms.Form):
     department = forms.ModelChoiceField(queryset=Department.objects.all(), required=False)

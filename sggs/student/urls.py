@@ -7,4 +7,5 @@ urlpatterns = [
     # path('view/attendence/', views.view_attendence, name='student_view_attendence'),
     # path('view/notifications/', views.view_notifications, name='student_view_notifications'),
     # path('feedback/', views.feedback, name='student_feedback'), 
+    path('mark/attendence/', views.mark_attendance, name='student_mark_attendence'),
 ]

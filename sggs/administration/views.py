@@ -237,7 +237,7 @@ def session_list(request):
             subject = form.cleaned_data.get('subject')
 
             if department:
-                sessions = sessions.filter(semester__department=department)
+                sessions = sessions.filter(department=department)
             if semester:
                 sessions = sessions.filter(semester=semester)
             if subject:

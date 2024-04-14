@@ -75,6 +75,9 @@ class StudentForm(forms.ModelForm):
             )
         return student
 
+class StudentSearchForm(forms.Form):
+    reg_no = forms.CharField(label='Student Registration Number')
+
 
 # Teachers form 
     
@@ -95,7 +98,7 @@ class ClassSessionForm(forms.ModelForm):
     class Meta:
         model = ClassSession
         fields = ['department', 'semester', 'subject', 'teacher', 'year', 'start_date', 'end_date']
-        # fields = ['subject', 'teacher', 'semester','department', 'year', 'start_date', 'end_date']
+        # fields = ['subject', 'teacher', 'semester','department', 'year', 'start_date', 'end_date','total_active_days']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

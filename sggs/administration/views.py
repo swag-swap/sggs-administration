@@ -4,14 +4,15 @@ from django.contrib import messages
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from .forms import StudentForm, RegistrationForm, LoginForm, TeacherForm, AdministratorForm, ClassSessionForm, SubjectForm, DepartmentForm, SessionFilterForm
+from .forms import StudentForm, RegistrationForm, LoginForm, TeacherForm, AdministratorForm, ClassSessionForm, SubjectForm, DepartmentForm, SessionFilterForm, StudentSearchForm
 from django.http import JsonResponse, QueryDict
-from .models import CustomUser, Administrator, Student, Notification, OTP, Teacher, ClassSession, Subject, Department
+from .models import CustomUser, Administrator, Student, Notification, OTP, Teacher, ClassSession, Subject, Department, Semester
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login  as auth_login
 from django.contrib.auth import logout as auth_logout
 import logging, json, random
-from django.db import transaction
+from django.db import transaction, connection
+
 
 logger = logging.getLogger(__name__)
 
@@ -212,7 +213,7 @@ def session_edit(request, session_id):
                 return redirect('admin_session_list')  # Redirect to session list page
         else:
             form = ClassSessionForm(instance=session)
-        return render(request, 'administration/session_edit.html', {'is_administration': True, 'user': request.user,'form': form})
+        return render(request, 'administration/session_edit.html', {'is_administration': True, 'user': request.user,'session':session,'form': form})
     else:
         return render(request, 'base/404.html')
 
@@ -334,6 +335,128 @@ def department_list(request):
         return render(request, 'administration/department_list.html', {'is_administration': True, 'user': request.user,'departments': departments})
     else:
         return render(request, 'base/404.html')
+
+
+
+@login_required
+def manage_teacher(request):
+    if not request.user.is_administrator == 1:
+        return render(request, 'base/404.html')  
+    
+    administrator = Administrator.objects.get(user = request.user) 
+    departments = administrator.departments.all()
+
+    if request.method == 'POST':
+        teacher_id = request.POST.get('teacher_id')
+        action = request.POST.get('action')
+        if action == 'remove_teacher_role':
+            teacher = get_object_or_404(Teacher, id=teacher_id)
+            teacher.user.is_teacher = -1 
+            teacher.user.save()
+            messages.success(request, f"Teacher role removed for {teacher.user.username}")
+
+            teacher.delete()
+        else:
+            messages.error(request, "Invalid action")
+
+    teachers = Teacher.objects.filter(departments__in=departments).distinct()
+    
+    return render(request, 'administration/teacher_manage.html', {'is_administration': True, 'user': request.user,'teachers': teachers})
+
+@login_required
+def teacher_details(request, teacher_id):
+    if not request.user.is_administrator == 1:
+        return render(request, 'base/404.html')  
+    teacher = get_object_or_404(Teacher, pk=teacher_id)
+    administrator = Administrator.objects.get(user = request.user) 
+    departments = administrator.departments.all()
+    sessions = ClassSession.objects.filter(department__in=departments, active=True)
+    return render(request, 'administration/teacher_detail.html', {'is_administration': True, 'user': request.user,'teacher': teacher, 'sessions': sessions})
+
+
+
+def calculate_attendance_percentage(session_id):
+    session = ClassSession.objects.get(id=session_id)
+    attendance_table_name = session.attendence_table_name 
+        # Query all students belonging to the specified year and semester
+    students = Student.objects.filter(semester=session.semester, year = session.year)
+
+    cursor = connection.cursor()
+    cursor.execute(f"SELECT student_id, COUNT(*) as total_attendances FROM {attendance_table_name} WHERE is_present = True GROUP BY student_id")
+    attendance_data = cursor.fetchall()
+
+    total_sessions = session.total_active_days  
+    attendance_percentage = {}
+    for student_id, total_attendances in attendance_data:
+        student = Student.objects.get(id=student_id)
+        attendance_percentage[student.user.username] = (total_attendances / total_sessions) * 100
+    
+    for student in students:
+        username = student.user.username
+        if username not in attendance_percentage:
+            attendance_percentage[username] = 0
+    
+    return attendance_percentage
+
+def session_attendance(request, session_id):
+    session = ClassSession.objects.get(pk=session_id)
+    attendance_percentage = calculate_attendance_percentage(session_id)
+    return render(request, 'administration/session_attendence.html', {'is_administration': True, 'user': request.user,'session': session, 'attendance_percentage': attendance_percentage})
+
+def manage_student(request):
+    if request.method == 'POST':
+        form = StudentSearchForm(request.POST)
+        if form.is_valid():
+            reg_no = form.cleaned_data['reg_no']
+            student = get_object_or_404(Student, reg_no=reg_no.upper())
+            return redirect('admin_student_manage_detail', id=student.id)
+    else:
+        form = StudentSearchForm()
+    return render(request, 'administration/student_manage.html', {'is_administration': True, 'user': request.user,'form': form})
+
+def get_student_attendance(student_id):
+    student = Student.objects.get(pk=student_id)
+    sessions = ClassSession.objects.filter(year=student.year, semester=student.semester)
+    
+    attendance_data = {}
+
+    for session in sessions:
+        # Fetch attendance data for the session and student
+        attendance_table_name = session.attendence_table_name
+        cursor = connection.cursor()
+        cursor.execute(f"SELECT COUNT(*) FROM {attendance_table_name} WHERE student_id = {student_id} AND is_present = True")
+        total_attendances = cursor.fetchone()[0]
+
+        # Calculate total number of classes for the session
+        total_classes = 0  # Replace with logic to calculate total classes
+
+        # Calculate attendance percentage
+        if total_classes > 0:
+            attendance_percentage = (total_attendances / total_classes) * 100
+        else:
+            attendance_percentage = 0
+        
+        # Store attendance percentage in the dictionary
+        attendance_data[session.id] = {
+            'session_name': f"{session.year}_{session.department.name}_{session.semester.name}_{session.subject.name}",
+            'total_attendances': total_attendances,
+            'attendance_percentage': attendance_percentage
+        }
+
+    return attendance_data
+
+def manage_student_detail(request, id):
+    student = get_object_or_404(Student, pk=id)
+    attendance_data = get_student_attendance(id)
+    return render(request, 'administration/student_manage_detail.html', {
+        'is_administration': True, 
+        'user': request.user,
+        'student': student,
+        'attendance_data': attendance_data
+    })
+
+
+
 
 #Notifications
 

@@ -21,9 +21,11 @@
             <span>{{ session.department.name }} - {{ session.subject.name }} - Year: {{ session.year }}</span>
             <div class="d-flex flex-wrap">
                 <a href="{% url 'admin_edit_session' session.id %}" class="btn btn-primary mr-2">Edit</a>
-                <a href="{% url 'admin_delete_session' session.id %}" class="btn btn-danger">Delete</a>
+                <a href="{% url 'session_attendance' session.id %}" class="btn btn-primary mx-2">View Attendance</a>
             </div>
-        </li>
+        </li> 
+        {% empty %}
+            <li class="list-group-item">No sessions available</li>
         {% endfor %}
     </ul>
 </div>

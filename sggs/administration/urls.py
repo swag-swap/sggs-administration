@@ -18,11 +18,15 @@ urlpatterns = [
     # path('notify/teacher/', views.notify_teacher, name='admin_notify_teacher'),
     # path('notify/student/', views.notify_student, name='admin_notify_student'),
     # path('add/teacher/', views.add_teacher, name='admin_add_teacher'),
-    # path('manage/teacher/', views.manage_teacher, name='admin_manage_teacher'),
     path('subject/add/', views.subject_add, name='admin_subject_add'),
     path('subject-list/',views.subject_list, name='admin_subject_list'),
     path('subject/edit/<int:subject_id>/', views.subject_edit, name='admin_subject_edit'), 
     path('subject/delete/<int:subject_id>/', views.subject_delete, name='admin_subject_delete'), 
+
+
+    path('student/manage/', views.manage_student, name='admin_student_manage'),
+    path('student/manage/<int:id>/', views.manage_student_detail, name='admin_student_manage_detail'),
+
 
 
     path('department/add/', views.department_add, name='admin_department_add'),
@@ -34,6 +38,13 @@ urlpatterns = [
     path('session-list/',views.session_list, name='admin_session_list'),
     path('session/edit/<int:session_id>/', views.session_edit, name='admin_edit_session'), 
     path('session/delete/<int:session_id>/', views.session_delete, name='admin_delete_session'), 
+    path('session/<int:session_id>/attendance/', views.session_attendance, name='session_attendance'),
+
+
+    path('teacher/manage/', views.manage_teacher, name='admin_manage_teacher'),
+    path('teacher/details/<int:teacher_id>/', views.teacher_details, name='admin_teacher_detail'),
+
+
     # path('view/notifications/', views.view_notifications, name='teacher_view_notifications'),
     # path('feedback/', views.feedback, name='teacher_feedback'), 
     # path('view/attendence/', views.view_attendence, name='admin_view_attendence'),

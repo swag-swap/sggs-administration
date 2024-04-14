@@ -22,7 +22,7 @@ def edit_profile(request):
  
                 Notification.objects.create(
                     user=request.user,   
-                    message=f"Teacher profile updated: {teacher.user.username}",
+                    message=f"Teacher profile update: {teacher.user.username}",
                     notification_type=1,  
                     for_administrator = True
                 )
@@ -32,3 +32,4 @@ def edit_profile(request):
         return render(request, 'teacher/edit_profile.html', {'form': form})
     else:
         render(request, 'base/404.html')
+

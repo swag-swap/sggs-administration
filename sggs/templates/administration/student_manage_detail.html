@@ -1,0 +1,41 @@
+{% extends "base.html" %} 
+{% block content %}
+<div class="container mt-5">
+    <h1>Student Details</h1>
+    <h3>{{ student.user.username }}</h3>
+    <p><strong>Registration Number:</strong> {{ student.reg_no }}</p>
+    <p><strong>Department:</strong> {{ student.department }}</p>
+    <p><strong>Semester:</strong> {{ student.semester }}</p>
+    <p><strong>Year:</strong> {{ student.year }}</p>
+    <p><strong>Roll Number:</strong> {{ student.roll_number }}</p>
+    <p><strong>Date of Birth:</strong> {{ student.date_of_birth }}</p>
+    <p><strong>Address:</strong> {{ student.address }}</p>
+    <p><strong>Contact Number:</strong> {{ student.contact_number }}</p>
+
+    <h3 class="mt-5">Attendance Data</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Session name</th>
+                <th>Total Attendence</th>
+                <th>Attendence percentage</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session_id, attendance_info in attendance_data.items %}
+                <tr>
+                    <td>{{ attendance_info.session_name }}</td>
+                    <td>{{ attendance_info.total_attendances }}</td> 
+                    <td>{{ attendance_info.attendance_percentage }}%</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">No attendance data available</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+{% endblock content %}

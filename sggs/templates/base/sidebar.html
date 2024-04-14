@@ -78,34 +78,14 @@
         <div class="sidebar-heading">
             Teacher
         </div>
-
-        <!-- Add Teacher -->
-        <li class="nav-item">
-            <a class="nav-link" href="tables.html">
-                <i class="fas fa-fw fa-table"></i>
-                <span>Add Teacher</span></a>
-        </li>
+ 
 
         <!-- Manage Teacher -->
         <li class="nav-item">
-            <a class="nav-link" href="tables.html">
+            <a class="nav-link" href="{% url 'admin_manage_teacher'%}">
                 <i class="fas fa-fw fa-table"></i>
                 <span>Manage Teacher</span></a>
-        </li>
-
-        <!-- Notification -->
-        <li class="nav-item">
-            <a class="nav-link" href="tables.html">
-                <i class="fas fa-fw fa-table"></i>
-                <span>Notifications</span></a>
-        </li>
-
-        <!-- View Attendence -->
-        <li class="nav-item">
-            <a class="nav-link" href="tables.html">
-                <i class="fas fa-fw fa-table"></i>
-                <span>View Attendence</span></a>
-        </li>
+        </li> 
 
         <!-- Divider -->
         <hr class="sidebar-divider">
@@ -113,28 +93,14 @@
         <!-- Heading -->
         <div class="sidebar-heading">
             Student
-        </div>
-
-        <!-- Add Student -->
-        <li class="nav-item">
-            <a class="nav-link" href="tables.html">
-                <i class="fas fa-fw fa-table"></i>
-                <span>Add Student</span></a>
-        </li>
+        </div> 
 
         <!-- Manage Student -->
         <li class="nav-item">
-            <a class="nav-link" href="tables.html">
+            <a class="nav-link" href="{% url 'admin_student_manage'%}">
                 <i class="fas fa-fw fa-table"></i>
                 <span>Manage Student</span></a>
-        </li>
-
-        <!-- View Attendence -->
-        <li class="nav-item">
-            <a class="nav-link" href="tables.html">
-                <i class="fas fa-fw fa-table"></i>
-                <span>View Attendence</span></a>
-        </li>
+        </li> 
     </div> 
     {% endif %}
 

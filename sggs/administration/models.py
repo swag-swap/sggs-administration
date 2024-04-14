@@ -145,13 +145,19 @@ class Teacher(models.Model):
 
 class Student(models.Model):  
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='student_profile')
+    reg_no = models.CharField(max_length=20)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='student_department', default=None, null=True)
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name='student_semester', default=None, null=True)
+    year = models.IntegerField()
     roll_number = models.CharField(max_length=20, default='')
     date_of_birth = models.DateField(default='2000-01-01')
     address = models.TextField(default='')
     contact_number = models.CharField(max_length=15, default='') 
 
+    def save(self, *args, **kwargs):
+        if self.user.username:
+            self.reg_no = self.user.username.upper()
+        super().save(*args, **kwargs)
 
 class Fee(models.Model):
     student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='fee')
@@ -173,6 +179,7 @@ class ClassSession(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     active = models.BooleanField(default=True)
+    total_active_days = models.IntegerField(default = 0)
     attendence_table_name = models.CharField(max_length=255, blank = True)
     result_table_name = models.CharField(max_length=255, blank = True)
     response_table_name = models.CharField(max_length=255, blank = True)

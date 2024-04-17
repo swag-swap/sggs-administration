@@ -20,18 +20,18 @@ class AttendanceExtractionForm(forms.Form):
 
 class QuestionForm(forms.Form):
     question = forms.CharField(label='Question', widget=forms.Textarea)
-    question_image_path = forms.ImageField(label='Question Image Path', required=False)
+    question_image = forms.ImageField(label='Question Image', required=False)
     option1 = forms.CharField(label='Option 1', widget=forms.Textarea)
-    option1_image_path = forms.ImageField(label='Option 1 Image Path', required=False)
+    option1_image = forms.ImageField(label='Option 1 Image', required=False)
     option2 = forms.CharField(label='Option 2', widget=forms.Textarea)
-    option2_image_path = forms.ImageField(label='Option 2 Image Path', required=False)
+    option2_image = forms.ImageField(label='Option 2 Image', required=False)
     option3 = forms.CharField(label='Option 3', widget=forms.Textarea)
-    option3_image_path = forms.ImageField(label='Option 3 Image Path', required=False)
+    option3_image = forms.ImageField(label='Option 3 Image', required=False)
     option4 = forms.CharField(label='Option 4', widget=forms.Textarea)
-    option4_image_path = forms.ImageField(label='Option 4 Image Path', required=False)
+    option4_image = forms.ImageField(label='Option 4 Image', required=False)
     correct_option = forms.IntegerField(label='Correct Option')
     explanation = forms.CharField(label='Explanation', widget=forms.Textarea)
-    explanation_image_path = forms.ImageField(label='Explanation Image Path', required=False)
+    explanation_image = forms.ImageField(label='Explanation Image', required=False)
 
     def __init__(self, *args, **kwargs):
         super(QuestionForm, self).__init__(*args, **kwargs)
@@ -39,6 +39,4 @@ class QuestionForm(forms.Form):
         self.helper.form_method = 'post'
         self.helper.add_input(Submit('submit', 'Submit'))
 
-
-class ImageUploadForm(forms.Form):
-    image = forms.ImageField()
+ 

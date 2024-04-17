@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import TeacherDetailsForm, AttendanceExtractionForm, QuestionForm, ImageUploadForm
-from administration.models import Student, Teacher, Notification, ClassSession, Subject
+from .forms import TeacherDetailsForm, AttendanceExtractionForm, QuestionForm
+from administration.models import Student, Teacher, Notification, ClassSession, Subject, UploadedImage
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 import pandas as pd
@@ -126,90 +126,98 @@ def subject_list(request):
     return render(request, 'teacher/subject_list.html', {'is_teacher':True, 'user':request.user,'subjects': subjects})
 
 def add_question(request, subject_id):
-    if request.user.is_teacher == -1:
-        render(request, 'base/404.html')
+    if request.user.is_teacher == 1:
+        return render(request, 'base/404.html')
     
     subject = get_object_or_404(Subject, id=subject_id)
     
     if request.method == 'POST':
         form = QuestionForm(request.POST, request.FILES)
         if form.is_valid():
-            question_data = form.cleaned_data
-            question_text = question_data['question']
-            question_image = question_data.get('question_image')
-            option1 = question_data['option1']
-            option1_image = question_data.get('option1_image')
-            option2 = question_data['option2']
-            option2_image = question_data.get('option2_image')
-            option3 = question_data['option3']
-            option3_image = question_data.get('option3_image')
-            option4 = question_data['option4']
-            option4_image = question_data.get('option4_image')
-            correct_option = question_data['correct_option']
-            explanation = question_data['explanation']
-            explanation_image = question_data.get('explanation_image')
+            question_data = {
+                'author': request.user.id,
+                'question': form.cleaned_data['question'].replace("'", "''"),  
+                'option1': form.cleaned_data['option1'].replace("'", "''"),  
+                'option2': form.cleaned_data['option2'].replace("'", "''"),  
+                'option3': form.cleaned_data['option3'].replace("'", "''"),  
+                'option4': form.cleaned_data['option4'].replace("'", "''"),  
+                'correct_option': form.cleaned_data['correct_option'],
+                'explanation': form.cleaned_data['explanation'].replace("'", "''"),  
+            }
             
-            # Save images to the server
-            if question_image:
-                question_image_path = default_storage.save('question_images/' + question_image.name, ContentFile(question_image.read()))
-            else:
-                question_image_path = None
+            cursor = connection.cursor()
             
-            if option1_image:
-                option1_image_path = default_storage.save('option_images/' + option1_image.name, ContentFile(option1_image.read()))
-            else:
-                option1_image_path = None
-            
-            if option2_image:
-                option2_image_path = default_storage.save('option_images/' + option2_image.name, ContentFile(option2_image.read()))
-            else:
-                option2_image_path = None
-            
-            if option3_image:
-                option3_image_path = default_storage.save('option_images/' + option3_image.name, ContentFile(option3_image.read()))
-            else:
-                option3_image_path = None
-            
-            if option4_image:
-                option4_image_path = default_storage.save('option_images/' + option4_image.name, ContentFile(option4_image.read()))
-            else:
-                option4_image_path = None
-            
-            if explanation_image:
-                explanation_image_path = default_storage.save('explanation_images/' + explanation_image.name, ContentFile(explanation_image.read()))
-            else:
-                explanation_image_path = None
+            for field_name in ['question_image', 'option1_image', 'option2_image', 'option3_image', 'option4_image', 'explanation_image']:
+                image_file = form.cleaned_data[field_name]
 
-            print(question_text, question_image_path, option1, option1_image_path,  option2, option2_image_path, option3, option3_image_path, option4, option4_image_path,  correct_option, explanation, explanation_image_path, option1_image)
-            
-            # with connection.cursor() as cursor:
-            #     cursor.execute("""
-            #         INSERT INTO {table_name} (question, question_image_path, option1, option1_image_path, 
-            #         option2, option2_image_path, option3, option3_image_path, option4, option4_image_path, 
-            #         correct_option, explanation, explanation_image_path) 
-            #         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                # """.format(table_name=subject.subjects_question_table_name), 
-                # [question_text, question_image_path, option1, option1_image_path, 
-                # option2, option2_image_path, option3, option3_image_path, option4, option4_image_path, 
-                # correct_option, explanation, explanation_image_path])
+                if image_file:
+                    upload_image = UploadedImage(image=image_file)
+                    upload_image.save()
+                    question_data[field_name] = upload_image.id
+                else:
+                    question_data[field_name] = 'NULL'
+
+            table_name = subject.subjects_question_table_name
+
+            # print("Table Name:", table_name)   
+
+            query = f""" 
+            INSERT INTO {table_name}  (author, question, option1, option2, option3, option4, correct_option, explanation, question_image, option1_image, option2_image, option3_image, option4_image, explanation_image)  VALUES ({question_data['author']}, '{question_data['question']}', '{question_data['option1']}', '{question_data['option2']}', '{question_data['option3']}', '{question_data['option4']}', {question_data['correct_option']}, '{question_data['explanation']}', {question_data['question_image']}, {question_data['option1_image']}, {question_data['option2_image']}, {question_data['option3_image']},  {question_data['option4_image']}, {question_data['explanation_image']}) 
+            """
+
+            # print("Query:", query)  
+            cursor.execute(query)
             
             return redirect('teacher_add_question', subject_id=subject_id)
     else:
         form = QuestionForm()
     
-    return render(request, 'teacher/add_question.html', {'is_teacher':True, 'user':request.user,'form': form, 'subject': subject})
+    return render(request, 'teacher/add_question.html', {'is_teacher': True, 'user': request.user, 'form': form, 'subject': subject})
+
+def delete_question_images(question_table_name, question_id):
+    cursor = connection.cursor()
+    cursor.execute(f"""
+        SELECT 
+            question_image, 
+            option1_image, 
+            option2_image, 
+            option3_image, 
+            option4_image, 
+            explanation_image
+        FROM 
+            {question_table_name}
+        WHERE 
+            id = {question_id}
+    """)
+    image_ids = cursor.fetchone()
+    if image_ids:
+        for id in image_ids:
+            if id is not None:
+                uploaded_image = UploadedImage.objects.get(id=id)
+                uploaded_image.delete()
+        print("Deleted all question images")
 
 
-def upload_image(request):
-    if request.method == 'POST':
-        form = ImageUploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            image = form.cleaned_data['image']
-            save_path = os.path.join('media', image.name)
-            with open(save_path, 'wb') as f:
-                for chunk in image.chunks():
-                    f.write(chunk)
-            return redirect('upload_image')
-    else:
-        form = ImageUploadForm()
-    return render(request, 'teacher/upload.html', {'form': form})
+def teacher_delete_question(request, subject_id, question_id): 
+    subject = get_object_or_404(Subject, id=subject_id) 
+    question_table_name = subject.subjects_question_table_name   
+    delete_question_images(question_table_name, question_id)
+
+    cursor = connection.cursor()
+    cursor.execute(f"DELETE FROM {question_table_name} WHERE id = {question_id};")
+ 
+    return redirect('teacher_add_question', subject_id=subject_id) 
+
+def subject_questions(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id) 
+    question_table_name = subject.subjects_question_table_name   
+
+    cursor = connection.cursor()
+    cursor.execute(f"SELECT * FROM {question_table_name}")
+
+    rows = cursor.fetchall()
+
+    # for row in rows:
+    #     print(row)  
+
+    return render(request, 'teacher/subject_questions.html', {'is_teacher':True, 'user':request.user,'rows': rows, 'subject':subject})

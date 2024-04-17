@@ -6,7 +6,7 @@
     <h1>Add Question</h1>
     <div class="row">
         <div class="col-md-6">
-            <form method="post">
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {% crispy form %}
             </form>

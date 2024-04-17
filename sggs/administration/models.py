@@ -62,17 +62,7 @@ class Subject(models.Model):
 
     def __str__(self):
         return self.name
-
-# Registering the model on admin dashboard
-def create_dynamic_model(table_name, fields):
-    meta_attrs = {'managed': False} 
-    model_fields = {field_name: models.CharField(max_length=100) for field_name in fields} 
-    dynamic_model = type(table_name, (models.Model,), {
-        '__module__': __name__,
-        'Meta': type('Meta', (), meta_attrs),
-        **model_fields
-    }) 
-    return dynamic_model 
+ 
 
 @receiver(pre_save, sender=Subject)
 def subject_pre_save(sender, instance, **kwargs):
@@ -92,6 +82,7 @@ def subject_post_save(sender, instance, created, **kwargs):
         try:
             cursor.execute(f"ALTER TABLE {old_table_name} RENAME TO {new_table_name};") 
             instance.subjects_question_table_name = new_table_name
+            instance.save()
 
             print(f"Renamed table from {old_table_name} to {new_table_name}")
         except Exception as e:
@@ -105,24 +96,25 @@ def subject_post_save(sender, instance, created, **kwargs):
         try:
             cursor.execute(f"""
                 CREATE TABLE IF NOT EXISTS {table_name} (
-                    id SERIAL PRIMARY KEY,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    author INTEGER REFERENCES administration_customuser(id),
                     question TEXT,
-                    question_image_path VARCHAR(255),
+                    question_image INTEGER REFERENCES administration_uploadedimage(id),
                     option1 TEXT,
-                    option1_image_path VARCHAR(255),
+                    option1_image INTEGER REFERENCES administration_uploadedimage(id),
                     option2 TEXT,
-                    option2_image_path VARCHAR(255),
+                    option2_image INTEGER REFERENCES administration_uploadedimage(id),
                     option3 TEXT,
-                    option3_image_path VARCHAR(255),
+                    option3_image INTEGER REFERENCES administration_uploadedimage(id),
                     option4 TEXT,
-                    option4_image_path VARCHAR(255),
+                    option4_image INTEGER REFERENCES administration_uploadedimage(id),
                     correct_option INTEGER,
                     explanation TEXT,
-                    explanation_image_path VARCHAR(255)
+                    explanation_image INTEGER REFERENCES administration_uploadedimage(id)
                 );
             """) 
             instance.subjects_question_table_name = table_name
-
+            instance.save()
             print(f"Created table {table_name} for subject {instance.name}")
         except Exception as e:
             print(f"Error creating table {table_name}: {e}")
@@ -138,6 +130,16 @@ def subject_post_delete(sender, instance, **kwargs):
     except Exception as e:
         print(f"Error deleting table {table_name}: {e}")
 
+
+class UploadedImage(models.Model):
+    image = models.ImageField(upload_to='question/',)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+@receiver(post_delete, sender=UploadedImage)
+def delete_profile_photo(sender, instance, **kwargs):
+    if instance.image:
+        if os.path.isfile(instance.image.path):
+            os.remove(instance.image.path)
 
 class Department(models.Model):
     name = models.CharField(max_length=100)
@@ -474,6 +476,3 @@ class Notification(models.Model):
     def __str__(self):
         return f'{self.user.username} - {self.message}'
 
-class UploadedImage(models.Model):
-    image = models.ImageField(upload_to='')
-    uploaded_at = models.DateTimeField(auto_now_add=True)

@@ -76,7 +76,7 @@ class StudentForm(forms.ModelForm):
         return student
 
 class StudentSearchForm(forms.Form):
-    reg_no = forms.CharField(label='Student Registration Number')
+    reg_no = forms.CharField(label='Student Registration Number', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter registration number'}))
 
 
 # Teachers form 
@@ -98,27 +98,63 @@ class ClassSessionForm(forms.ModelForm):
     class Meta:
         model = ClassSession
         fields = ['department', 'semester', 'subject', 'teacher', 'year', 'start_date', 'end_date']
-        # fields = ['subject', 'teacher', 'semester','department', 'year', 'start_date', 'end_date','total_active_days']
+        widgets = {
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'type': 'date'}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['subject'].label = 'Subject'
         self.fields['teacher'].label = 'Teacher'
         self.fields['semester'].label = 'Semester' 
-        self.fields['department'].label = 'Department' 
+        self.fields['department'].label = 'Department'
+        
+        for field_name, field in self.fields.items():
+            field.widget.attrs.update({'class': 'form-control'})
+            
+        self.fields['subject'].widget.attrs.update({'placeholder': 'Enter subject'})
+        self.fields['teacher'].widget.attrs.update({'placeholder': 'Enter teacher'})
+        self.fields['semester'].widget.attrs.update({'placeholder': 'Enter semester'})
+        self.fields['department'].widget.attrs.update({'placeholder': 'Enter department'})
+
 
 class SessionFilterForm(forms.Form):
-    department = forms.ModelChoiceField(queryset=Department.objects.all(), required=False)
-    semester = forms.ModelChoiceField(queryset=Semester.objects.all(), required=False)
-    subject = forms.ModelChoiceField(queryset=Subject.objects.all(), required=False)
+    department = forms.ModelChoiceField(
+        queryset=Department.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    semester = forms.ModelChoiceField(
+        queryset=Semester.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    subject = forms.ModelChoiceField(
+        queryset=Subject.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
 
 class SubjectForm(forms.ModelForm):
     class Meta:
         model = Subject
         fields = ['name']
+        labels = {
+            'name': 'Subject Name',
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter subject name'}),
+        }
 
 class DepartmentForm(forms.ModelForm):
     class Meta:
         model = Department
         fields = ['name']
+        labels = {
+            'name': 'Department Name',
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Department name'}),
+        }
 

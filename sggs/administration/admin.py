@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.db import models, connection
-from .models import CustomUser, Subject, Department, Teacher, Student, Semester, Administrator, Fee, ClassSession, Notification, OTP
+from .models import CustomUser, Subject, Department, Teacher, Student, Semester, Administrator, Fee, ClassSession, Notification, OTP, Division
 
 admin.site.register(CustomUser)
 admin.site.register(Subject)
@@ -13,6 +13,7 @@ admin.site.register(Fee)
 admin.site.register(ClassSession)
 admin.site.register(Notification)
 admin.site.register(OTP)
+admin.site.register(Division)
 
 
 # from django.contrib import admin

@@ -1,0 +1,14 @@
+{% extends "base.html" %} 
+{% block content %}
+<div class="container">
+    <h1>Mark Attendance</h1>
+    <form method="post">
+        {% csrf_token %} 
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date"><br>
+        <label for="is_present">Present:</label>
+        <input type="checkbox" id="is_present" name="is_present" value="true"><br>
+        <button type="submit">Submit</button>
+    </form>
+</div>
+{% endblock content %}

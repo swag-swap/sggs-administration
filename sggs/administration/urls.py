@@ -24,8 +24,8 @@ urlpatterns = [
     path('subject/delete/<int:subject_id>/', views.subject_delete, name='admin_subject_delete'), 
 
 
-    path('student/manage/', views.manage_student, name='admin_student_manage'),
-    path('student/manage/<int:id>/', views.manage_student_detail, name='admin_student_manage_detail'),
+    path('manage/student/', views.manage_student, name='admin_student_manage'),
+    path('manage/student/<int:id>/', views.manage_student_detail, name='admin_student_manage_detail'),
 
 
 
@@ -41,8 +41,8 @@ urlpatterns = [
     path('session/<int:session_id>/attendance/', views.session_attendance, name='session_attendance'),
 
 
-    path('teacher/manage/', views.manage_teacher, name='admin_manage_teacher'),
-    path('teacher/details/<int:teacher_id>/', views.teacher_details, name='admin_teacher_detail'),
+    path('manage/teacher/', views.manage_teacher, name='admin_manage_teacher'),
+    path('detail/teacher/<int:teacher_id>/', views.teacher_details, name='admin_teacher_detail'),
 
 
     # path('view/notifications/', views.view_notifications, name='teacher_view_notifications'),

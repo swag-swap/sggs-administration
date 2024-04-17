@@ -7,14 +7,36 @@ from django.contrib import admin
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
-import random, re
+import random, re, os
 
 class CustomUser(AbstractUser):
-    email = models.EmailField(unique=True) 
-    # -1 -> role is not choosen, 0 -> role choosen but not admiteed by admin, 1 -> role fixed
-    is_student = models.IntegerField(default = -1)
-    is_teacher = models.IntegerField(default = -1)
-    is_administrator = models.IntegerField(default = -1) 
+    email = models.EmailField(unique=True)
+    # -1 -> role is not chosen, 0 -> role chosen but not admitted by admin, 1 -> role fixed
+    is_student = models.IntegerField(default=-1)
+    is_teacher = models.IntegerField(default=-1)
+    is_administrator = models.IntegerField(default=-1)
+    profile_photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            try:
+                old_user = CustomUser.objects.get(pk=self.pk)
+                if old_user.profile_photo and self.profile_photo != old_user.profile_photo:
+                    if os.path.isfile(old_user.profile_photo.path):
+                        os.remove(old_user.profile_photo.path)
+            except CustomUser.DoesNotExist:
+                pass
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.username
+
+@receiver(post_delete, sender=CustomUser)
+def delete_profile_photo(sender, instance, **kwargs):
+    if instance.profile_photo:
+        if os.path.isfile(instance.profile_photo.path):
+            os.remove(instance.profile_photo.path)
 
 class OTP(models.Model):
     email = models.EmailField(unique=True)
@@ -63,8 +85,8 @@ def subject_post_save(sender, instance, created, **kwargs):
     table_name_prefix = "question_" 
 
     if hasattr(instance, '_old_name') and instance._old_name != instance.name:
-        old_table_name = f"{table_name_prefix}{slugify(instance._old_name)}"   
-        new_table_name = f"{table_name_prefix}{slugify(instance.name)}"   
+        old_table_name = f"{table_name_prefix}{slugify(instance._old_name).replace('-', '_')}"   
+        new_table_name = f"{table_name_prefix}{slugify(instance.name).replace('-', '_')}"   
  
         cursor = connection.cursor()
         try:
@@ -77,7 +99,8 @@ def subject_post_save(sender, instance, created, **kwargs):
 
         delattr(instance, '_old_name')
     elif created:   
-        table_name = f"{table_name_prefix}{slugify(instance.name)}"  # Table name
+        
+        table_name = f"{table_name_prefix}{slugify(instance.name).replace('-', '_')}"  # Table name
         cursor = connection.cursor()
         try:
             cursor.execute(f"""
@@ -107,7 +130,7 @@ def subject_post_save(sender, instance, created, **kwargs):
 @receiver(post_delete, sender=Subject)
 def subject_post_delete(sender, instance, **kwargs):
     # Delete the corresponding table
-    table_name = f"administration_question_{slugify(instance.name)}"
+    table_name = f"question_{slugify(instance.name).replace('-', '_')}"
     cursor = connection.cursor()
     try:
         cursor.execute(f"DROP TABLE IF EXISTS {table_name};")
@@ -122,13 +145,6 @@ class Department(models.Model):
     def __str__(self):
         return f"{self.name}"
 
-@receiver(post_save, sender=Department)
-def create_semesters(sender, instance, created, **kwargs):
-    if created: 
-        for i in range(1, 9):
-            Semester.objects.create(name=i, department=instance)
-
-
 
 class Semester(models.Model):
     name = models.IntegerField() 
@@ -139,6 +155,7 @@ class Semester(models.Model):
 class Teacher(models.Model): 
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='teacher_profile')
     departments = models.ManyToManyField(Department, related_name='teachers', default=None) 
+    subjects = models.ManyToManyField(Subject, related_name='teacher_subject', default=None) 
 
     def __str__(self):
         return self.user.username 
@@ -170,6 +187,17 @@ class Administrator(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='administrator_profile')
     departments = models.ManyToManyField(Department, related_name='administrators', default=None) 
 
+class Division(models.Model):
+    name = models.CharField(max_length=20, unique=True)
+
+    def __str__(self):
+        return self.name     
+    
+    def clean(self):
+        upper_name = self.name.upper()
+        if Division.objects.exclude(pk=self.pk).filter(name__iexact=upper_name).exists():
+            raise ValidationError('Division with this name already exists.')
+
 class ClassSession(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     teacher = models.ManyToManyField(Teacher, related_name='session_teachers') 
@@ -179,11 +207,13 @@ class ClassSession(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     active = models.BooleanField(default=True)
+    attendence_active = models.BooleanField(default=False)
     total_active_days = models.IntegerField(default = 0)
     attendence_table_name = models.CharField(max_length=255, blank = True)
     result_table_name = models.CharField(max_length=255, blank = True)
     response_table_name = models.CharField(max_length=255, blank = True)
     test_table_name = models.CharField(max_length=255, blank = True)
+    test_questions_table_name = models.CharField(max_length=255, blank = True)
     
     def save(self, *args, **kwargs):
         department_name = self.department.name
@@ -234,14 +264,34 @@ class ClassSession(models.Model):
                 cursor.execute(f"""
                     CREATE TABLE IF NOT EXISTS {test_table_name} (
                         id SERIAL PRIMARY KEY,
-                        student_id INTEGER REFERENCES auth_user(id),
-                        date DATE,
-                        is_present BOOLEAN
+                        heading VARCHAR(255) NOT NULL,
+                        description TEXT,
+                        start_time TIMESTAMP,
+                        end_time TIMESTAMP,
+                        no_of_questions INTEGER
                     );
                 """) 
                 print(f"Creating the table {test_table_name}...")
             except Exception as e:
                 print(f"Error creating table {test_table_name}: {e}")
+
+            # Doing the Test Questions table creation
+            test_questions_table_name = f"{table_detail_name}_test_questions"
+            self.test_questions_table_name = test_questions_table_name
+            cursor = connection.cursor()
+            try:
+                cursor.execute(f"""
+                    CREATE TABLE IF NOT EXISTS {test_questions_table_name} (
+                        id SERIAL PRIMARY KEY,
+                        test_id INTEGER REFERENCES {test_table_name}(id),
+                        question_table_name VARCHAR(255) NOT NULL,
+                        question_id INTEGER NOT NULL,
+                        marks INTEGER
+                    );
+                """) 
+                print(f"Creating the table {test_questions_table_name}...")
+            except Exception as e:
+                print(f"Error creating table {test_questions_table_name}: {e}")
 
             # Doing the Result table creation
             result_table_name = f"{table_detail_name}_result"
@@ -251,9 +301,10 @@ class ClassSession(models.Model):
                 cursor.execute(f"""
                     CREATE TABLE IF NOT EXISTS {result_table_name} (
                         id SERIAL PRIMARY KEY,
-                        student_id INTEGER REFERENCES auth_user(id),
-                        date DATE,
-                        is_present BOOLEAN
+                        test_id INTEGER REFERENCES {test_table_name}(id),
+                        student_id INTEGER REFERENCES administration_student(id),
+                        mark_obtained INTEGER,
+                        total_marks INTEGER
                     );
                 """) 
                 print(f"Creating the table {result_table_name}...")
@@ -268,9 +319,10 @@ class ClassSession(models.Model):
                 cursor.execute(f"""
                     CREATE TABLE IF NOT EXISTS {response_table_name} (
                         id SERIAL PRIMARY KEY,
-                        student_id INTEGER REFERENCES auth_user(id),
-                        date DATE,
-                        is_present BOOLEAN
+                        test_id INTEGER REFERENCES {test_table_name}(id),
+                        student_id INTEGER REFERENCES administration_student(id),
+                        question_id INTEGER,
+                        option_selected INTEGER
                     );
                 """) 
                 print(f"Creating the table {response_table_name}...")
@@ -302,6 +354,20 @@ class ClassSession(models.Model):
                     cursor.execute(f"ALTER TABLE {old_test_table_name} RENAME TO {new_test_table_name};")
                     self.test_table_name = new_test_table_name 
                     print(f"Updating table name from {old_test_table_name} to {new_test_table_name}...")
+                except Exception as e:
+                    print(f"Error updating table name: {e}")
+
+            # Changing name of Test Questions table name
+            old_test_questions_table_name = self.test_questions_table_name
+            new_test_questions_table_name = f"{table_detail_name}_test"
+            print(old_test_questions_table_name, new_test_questions_table_name)
+            
+            if old_test_questions_table_name != new_test_questions_table_name:
+                cursor = connection.cursor()
+                try:
+                    cursor.execute(f"ALTER TABLE {old_test_questions_table_name} RENAME TO {new_test_questions_table_name};")
+                    self.test_questions_table_name = new_test_questions_table_name 
+                    print(f"Updating table name from {old_test_questions_table_name} to {new_test_questions_table_name}...")
                 except Exception as e:
                     print(f"Error updating table name: {e}")
 
@@ -340,9 +406,9 @@ def handle_class_session_post_delete(sender, instance, **kwargs):
     response_table_name = instance.response_table_name
     result_table_name = instance.result_table_name
     test_table_name = instance.test_table_name
+    test_questions_table_name = instance.test_questions_table_name
     attendence_table_name = instance.attendence_table_name
     cursor = connection.cursor()
-    # Deleting the response table of the session
     try:
         cursor.execute(f"DROP TABLE IF EXISTS {response_table_name};")
         print(f"Dropping the table {response_table_name}...")
@@ -350,7 +416,6 @@ def handle_class_session_post_delete(sender, instance, **kwargs):
         print(f"Error dropping table {response_table_name}: {e}")
 
 
-    # Deleting the response table of the session
     try:
         cursor.execute(f"DROP TABLE IF EXISTS {result_table_name};")
         print(f"Dropping the table {result_table_name}...")
@@ -358,7 +423,6 @@ def handle_class_session_post_delete(sender, instance, **kwargs):
         print(f"Error dropping table {result_table_name}: {e}")
 
 
-    # Deleting the response table of the session
     try:
         cursor.execute(f"DROP TABLE IF EXISTS {test_table_name};")
         print(f"Dropping the table {test_table_name}...")
@@ -366,7 +430,13 @@ def handle_class_session_post_delete(sender, instance, **kwargs):
         print(f"Error dropping table {test_table_name}: {e}")
 
 
-    # Deleting the response table of the session
+    try:
+        cursor.execute(f"DROP TABLE IF EXISTS {test_questions_table_name};")
+        print(f"Dropping the table {test_questions_table_name}...")
+    except Exception as e:
+        print(f"Error dropping table {test_questions_table_name}: {e}")
+
+
     try:
         cursor.execute(f"DROP TABLE IF EXISTS {attendence_table_name};")
         print(f"Dropping the table {attendence_table_name}...")
@@ -396,9 +466,14 @@ class Notification(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='student_notification', default=None, null=True)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='teacher_notification', default=None, null=True)
     administrator = models.ForeignKey(Administrator, on_delete=models.CASCADE, related_name='administrator_notification', default=None, null=True)
+    session = models.ForeignKey(ClassSession, on_delete=models.CASCADE, related_name='session_notification', default=None, null=True)
     for_student = models.BooleanField(default=False)
     for_administrator = models.BooleanField(default=False)
     for_teacher = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.user.username} - {self.message}'
+
+class UploadedImage(models.Model):
+    image = models.ImageField(upload_to='')
+    uploaded_at = models.DateTimeField(auto_now_add=True)

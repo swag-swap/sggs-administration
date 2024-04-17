@@ -1,0 +1,19 @@
+<!-- sessions.html -->
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h1>My Sessions</h1>
+    <div class="list-group mt-3">
+        {% if sessions %}
+            {% for session in sessions %}
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <span>{{ session.subject.name }} - Year: {{ session.year }}</span>
+                <a href="{% url 'teacher_take_attendence' session_id=session.id %}" class="btn btn-primary">Take Attendance</a>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>No sessions available.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

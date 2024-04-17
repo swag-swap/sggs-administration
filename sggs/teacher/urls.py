@@ -2,9 +2,17 @@ from django.urls import path, include
 from . import views 
 
 urlpatterns = [ 
-    # path('home/', views.home, name='teacher_home'),
+    path('home/', views.teacher_home, name='teacher_home'),
     path('edit/profile/', views.edit_profile, name='teacher_edit_profile'),
-    # path('take/attendence/', views.take_attendence, name='teacher_take_attendence'),
+    path('sessions/', views.teacher_sessions, name='teacher_sessions'),
+    path('session/<int:session_id>/start-attendance/', views.start_attendence, name='start_attendence'),
+    path('session/<int:session_id>/stop-attendance/', views.stop_attendence, name='stop_attendence'),
+    path('session/<int:session_id>/take/attendence/', views.take_attendance, name='teacher_take_attendence'),
+    path('subject/<int:subject_id>/add_question/', views.add_question, name='teacher_add_question'),
+    path('subjects/', views.subject_list, name='teacher_subject_list'),
+    path('upload/', views.upload_image, name='upload_image'),
+
+
     # path('view/notifications/', views.view_notifications, name='teacher_view_notifications'),
     # path('feedback/', views.feedback, name='teacher_feedback'), 
 

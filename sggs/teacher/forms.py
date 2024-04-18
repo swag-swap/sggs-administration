@@ -2,6 +2,8 @@ from django import forms
 from administration.models import Teacher, Department, Subject
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
+from django.utils import timezone
+from django.db import connection
 
 class TeacherDetailsForm(forms.ModelForm): 
     def __init__(self, *args, **kwargs):
@@ -39,4 +41,24 @@ class QuestionForm(forms.Form):
         self.helper.form_method = 'post'
         self.helper.add_input(Submit('submit', 'Submit'))
 
- 
+class TestCreationForm(forms.Form):
+    heading = forms.CharField(label='Heading', max_length=255, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    description = forms.CharField(label='Description', widget=forms.Textarea(attrs={'class': 'form-control'}))
+    start_time = forms.DateTimeField(label='Start Time', initial=timezone.now(), widget=forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'))
+    end_time = forms.DateTimeField(label='End Time', initial=timezone.now(), widget=forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'))
+
+    def __init__(self, *args, **kwargs):
+        super(TestCreationForm, self).__init__(*args, **kwargs)
+        max_questions = self.get_max_questions()
+        self.fields['no_of_questions'] = forms.IntegerField(label='Number of Questions', min_value=1, max_value=max_questions, widget=forms.NumberInput(attrs={'class': 'form-control'}))
+
+    def get_max_questions(self):
+        subject_question_table_name = self.initial.get('subject_question_table_name', '')
+        if subject_question_table_name:
+            with connection.cursor() as cursor:
+                cursor.execute(f"SELECT COUNT(*) FROM {subject_question_table_name}")
+                row = cursor.fetchone()
+                if row:
+                    return row[0]
+        return 0
+    

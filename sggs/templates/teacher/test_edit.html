@@ -1,0 +1,35 @@
+{% extends 'base.html' %} 
+{% block content %} 
+<div class="container mt-5">
+    <h1>Edit Test</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <!-- Existing Questions -->
+        <h2>Existing Questions</h2>
+        <ul>
+            {% for question in existing_questions %}
+            <li>{{ question.question_text }} - Marks: <input type="number" name="question_{{ question.id }}_marks" value="{{ question.marks }}"></li>
+            {% endfor %}
+        </ul>
+        <!-- New Questions -->
+        <h2>New Questions</h2>
+        <ul>
+            {% for i in new_question_range %}
+            <li>
+                <select name="new_question_ids">
+                    <option value="">Select Question</option>
+                    {% for question in all_questions %}
+                    <option value="{{ question.id }}">{{ question.question_text }}</option>
+                    {% endfor %}
+                </select>
+                Marks: <input type="number" name="new_question_marks">
+            </li>
+            {% endfor %}
+        </ul>
+        <!-- Add Random Questions Button -->
+        <button type="submit" name="add_random_questions" class="btn btn-primary">Add Random Questions</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+</div>
+{% endblock %}

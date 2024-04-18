@@ -298,7 +298,7 @@ def department_add(request):
             form = DepartmentForm(request.POST)
             if form.is_valid():
                 form.save()
-                return redirect('admin_department_list')  # Redirect to department list page
+                return redirect('admin_department_list')  
         else:
             form = DepartmentForm()
         return render(request, 'administration/department_add.html', {'is_administration': True, 'user': request.user,'form': form})
@@ -421,22 +421,16 @@ def get_student_attendance(student_id):
     attendance_data = {}
 
     for session in sessions:
-        # Fetch attendance data for the session and student
         attendance_table_name = session.attendence_table_name
         cursor = connection.cursor()
         cursor.execute(f"SELECT COUNT(*) FROM {attendance_table_name} WHERE student_id = {student_id} AND is_present = True")
         total_attendances = cursor.fetchone()[0]
 
-        # Calculate total number of classes for the session
-        total_classes = 0  # Replace with logic to calculate total classes
-
-        # Calculate attendance percentage
+        total_classes = 0   
         if total_classes > 0:
             attendance_percentage = (total_attendances / total_classes) * 100
         else:
-            attendance_percentage = 0
-        
-        # Store attendance percentage in the dictionary
+            attendance_percentage = 0 
         attendance_data[session.id] = {
             'session_name': f"{session.year}_{session.department.name}_{session.semester.name}_{session.subject.name}",
             'total_attendances': total_attendances,

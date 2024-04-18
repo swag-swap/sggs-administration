@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>{{ session.subject.name }} - Session Tests</h1>
+    {% if tests %}
+    <div class="list-group mt-3">
+        {% for test in tests %}
+        <a href="{% url 'teacher_test_edit' session_id=session.id test_id=test.id %}" class="list-group-item list-group-item-action">
+            <h5 class="mb-1">{{ test.heading }}</h5>
+            <p class="mb-1">{{ test.description }}</p>
+            <small>Start Time: {{ test.start_time }} - End Time: {{ test.end_time }}</small>
+            <span class="badge badge-primary badge-pill">{{ test.no_of_questions }} Questions</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info mt-3" role="alert">
+        No tests available for this session.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -131,6 +131,18 @@
                 <span>Feedback</span></a>
         </li> 
 
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'teacher_subject_list' %}">
+                <i class="fas fa-fw fa-table"></i>
+                <span>Subjects</span></a>
+        </li>  
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'teacher_sessions' %}">
+                <i class="fas fa-fw fa-table"></i>
+                <span>Sessions</span></a>
+        </li> 
+
 
         <hr class="sidebar-divider">
 
@@ -168,12 +180,6 @@
         <div class="sidebar-heading">
             Student
         </div>
-
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'teacher_sessions' %}">
-                <i class="fas fa-fw fa-table"></i>
-                <span>Sessions</span></a>
-        </li> 
 
         <li class="nav-item">
             <a class="nav-link" href="tables.html">

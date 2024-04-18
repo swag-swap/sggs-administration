@@ -71,7 +71,7 @@ def subject_pre_save(sender, instance, **kwargs):
         instance._old_name = old_instance.name
 
 @receiver(post_save, sender=Subject)
-def subject_post_save(sender, instance, created, **kwargs):
+def subject_post_save(sender, instance, created, **kwargs): 
     table_name_prefix = "question_" 
 
     if hasattr(instance, '_old_name') and instance._old_name != instance.name:
@@ -132,11 +132,11 @@ def subject_post_delete(sender, instance, **kwargs):
 
 
 class UploadedImage(models.Model):
-    image = models.ImageField(upload_to='question/',)
+    image = models.ImageField(upload_to='question/', blank=True, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
 @receiver(post_delete, sender=UploadedImage)
-def delete_profile_photo(sender, instance, **kwargs):
+def delete_image(sender, instance, **kwargs):
     if instance.image:
         if os.path.isfile(instance.image.path):
             os.remove(instance.image.path)
@@ -226,7 +226,7 @@ class ClassSession(models.Model):
         semester_name = re.sub(r'\s+', '_', semester_name)
         subject_name = re.sub(r'\s+', '_', subject_name)
         year = re.sub(r'\s+', '_', year)
-        table_detail_name = f"z_{year}_{department_name}_{semester_name}_{subject_name}"
+        table_detail_name = f"z_{year}_{department_name}_{semester_name}_{subject_name}" 
         
         
         if self.test_table_name == '':
@@ -237,7 +237,7 @@ class ClassSession(models.Model):
             try:
                 cursor.execute(f"""
                     CREATE TABLE IF NOT EXISTS {attendence_table_name} (
-                        id SERIAL PRIMARY KEY,
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
                         student_id INTEGER REFERENCES administration_student(id),
                         date DATE,
                         is_present BOOLEAN
@@ -265,7 +265,7 @@ class ClassSession(models.Model):
             try:
                 cursor.execute(f"""
                     CREATE TABLE IF NOT EXISTS {test_table_name} (
-                        id SERIAL PRIMARY KEY,
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
                         heading VARCHAR(255) NOT NULL,
                         description TEXT,
                         start_time TIMESTAMP,
@@ -284,10 +284,9 @@ class ClassSession(models.Model):
             try:
                 cursor.execute(f"""
                     CREATE TABLE IF NOT EXISTS {test_questions_table_name} (
-                        id SERIAL PRIMARY KEY,
-                        test_id INTEGER REFERENCES {test_table_name}(id),
-                        question_table_name VARCHAR(255) NOT NULL,
-                        question_id INTEGER NOT NULL,
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        test_id INTEGER REFERENCES {test_table_name}(id), 
+                        question_id INTEGER REFERENCES {self.subject.subjects_question_table_name}(id), 
                         marks INTEGER
                     );
                 """) 
@@ -302,7 +301,7 @@ class ClassSession(models.Model):
             try:
                 cursor.execute(f"""
                     CREATE TABLE IF NOT EXISTS {result_table_name} (
-                        id SERIAL PRIMARY KEY,
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
                         test_id INTEGER REFERENCES {test_table_name}(id),
                         student_id INTEGER REFERENCES administration_student(id),
                         mark_obtained INTEGER,
@@ -320,10 +319,10 @@ class ClassSession(models.Model):
             try:
                 cursor.execute(f"""
                     CREATE TABLE IF NOT EXISTS {response_table_name} (
-                        id SERIAL PRIMARY KEY,
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
                         test_id INTEGER REFERENCES {test_table_name}(id),
                         student_id INTEGER REFERENCES administration_student(id),
-                        question_id INTEGER,
+                        question_id INTEGER REFERENCES {test_questions_table_name}(id),
                         option_selected INTEGER
                     );
                 """) 

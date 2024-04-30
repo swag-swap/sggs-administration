@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Test Edit Questions</h1>
+    <div class="x-1 p-3">
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="get_random_question">
+            <button type="submit" class="btn btn-primary">Get Another Random Question</button>
+        </form>
+    </div>
+    <!-- <p>Test ID: {{ test_id }}</p> -->
+    <div class="mt-4">
+        {% if questions %}
+            {% for question in questions %}
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title font-weight-bold">Question {{ forloop.counter }}</h5>
+                            <div class="marks-badge">Marks:
+                                <span class="badge badge-secondary">{{ question.15 }}</span>
+                            </div>
+                        </div> 
+                        <div  class="rounded p-2 my-2">
+                            <h5 class="card-title ">{{ question.2 }}</h5>
+                            {% if question.3 %}
+                                <img src="/media/{{ question.3 }}" alt="Question Image" class="img-fluid" width="200" height="150">
+                            {% endif %}
+                        </div>
+                        <div class="form-group border rounded p-1 my-2">
+                            <input type="checkbox" id="option1" name="option1" {% if question.12 == 1 %} checked {% endif %} disabled>
+                            <label for="option1">{{ question.4 }}</label>
+                            {% if question.5 %}
+                                <img src="/media/{{ question.5 }}" alt="Option 1 Image" class="img-fluid" width="200" height="150">
+                            {% endif %}
+                        </div>
+                        <div class="form-group border rounded p-1 my-2">
+                            <input type="checkbox" id="option2" name="option2" {% if question.12 == 2 %} checked {% endif %} disabled>
+                            <label for="option2">{{ question.6 }}</label>
+                            {% if question.7 %}
+                                <img src="/media/{{ question.7 }}" alt="Option 2 Image" class="img-fluid" width="200" height="150">
+                            {% endif %}
+                        </div>
+                        <div class="form-group border rounded p-1 my-2">
+                            <input type="checkbox" id="option3" name="option3" {% if question.12 == 3 %} checked {% endif %} disabled>
+                            <label for="option3">{{ question.8 }}</label>
+                            {% if question.9 %}
+                                <img src="/media/{{ question.9 }}" alt="Option 3 Image" class="img-fluid" width="200" height="150">
+                            {% endif %}
+                        </div>
+                        <div class="form-group border rounded p-1 my-2">
+                            <input type="checkbox" id="option4" name="option4" {% if question.12 == 4 %} checked {% endif %} disabled>
+                            <label for="option4">{{ question.10 }}</label>
+                            {% if question.11 %}
+                                <img src="/media/{{ question.11 }}" alt="Option 4 Image" class="img-fluid" width="200" height="150">
+                            {% endif %}
+                        </div>
+                        <p class="card-text">Explanation: {{ question.13 }}</p>
+                        {% if question.14 %}
+                            <img src="{{ question.14.url }}" alt="Explanation Image" class="img-fluid">
+                        {% endif %}
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="question_id" value="{{ question.0 }}">
+                            <input type="hidden" name="action" value="delete_question">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+        <div class="alert alert-info" role="alert">
+            No questions available for this test.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

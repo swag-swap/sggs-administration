@@ -4,10 +4,11 @@
 
 <div class="container mt-5">
     <h1 class="mb-4">Subject Questions</h1>
-    <div class="table-responsive">
+    <div class="w-full table-responsive">
         <table class="table table-striped">
             <thead>
                 <tr>
+                    <th>No.</th>
                     <th>ID</th>
                     <th>Author</th>
                     <th>Question</th>
@@ -29,6 +30,7 @@
             <tbody>
                 {% for row in rows %}
                 <tr>
+                    <td>{{ forloop.counter }}</td>
                     <td>{{ row.0 }}</td>
                     <td>{{ row.1 }}</td>
                     <td>{{ row.2 }}</td>

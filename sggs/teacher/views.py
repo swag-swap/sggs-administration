@@ -7,7 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 import pandas as pd
 import os
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.db import  connection, transaction
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
@@ -50,6 +50,7 @@ def edit_profile(request):
         form = TeacherDetailsForm(instance=teacher)
     return render(request, 'teacher/edit_profile.html', {'is_teacher':True, 'user':request.user,'form': form}) 
 
+@login_required
 def start_attendence(request, session_id):
     if request.user.is_teacher == -1:
         render(request, 'base/404.html')
@@ -65,6 +66,7 @@ def start_attendence(request, session_id):
         )
     return redirect('teacher_home')
 
+@login_required
 def stop_attendence(request, session_id):
     if request.user.is_teacher == -1:
         render(request, 'base/404.html')
@@ -75,6 +77,7 @@ def stop_attendence(request, session_id):
 
     return redirect('teacher_home')
 
+@login_required
 def take_attendance(request, session_id):
     session = get_object_or_404(ClassSession, pk=session_id)
     
@@ -113,7 +116,7 @@ def take_attendance(request, session_id):
     
     return render(request, 'teacher/attendance_take.html', {'is_teacher':True, 'user':request.user,'session': session})
 
-
+@login_required
 def teacher_sessions(request):
     if request.user.is_teacher == -1:
         render(request, 'base/404.html')
@@ -121,12 +124,14 @@ def teacher_sessions(request):
     sessions = teacher.session_teachers.all()
     return render(request, 'teacher/sessions.html', {'is_teacher':True, 'user':request.user,'sessions': sessions})
 
+@login_required
 def subject_list(request):
     if request.user.is_teacher == -1:
         render(request, 'base/404.html')
     subjects = Subject.objects.all()
     return render(request, 'teacher/subject_list.html', {'is_teacher':True, 'user':request.user,'subjects': subjects})
 
+@login_required
 def add_question(request, subject_id):
     if not request.user.is_teacher == 1:
         return render(request, 'base/404.html')
@@ -176,10 +181,11 @@ def add_question(request, subject_id):
     
     return render(request, 'teacher/add_question.html', {'is_teacher': True, 'user': request.user, 'form': form, 'subject': subject})
 
+@login_required
 def delete_question_images(question_table_name, question_id):
     return 0
 
-
+@login_required
 def teacher_delete_question(request, subject_id, question_id): 
     subject = get_object_or_404(Subject, id=subject_id) 
     question_table_name = subject.subjects_question_table_name   
@@ -209,6 +215,7 @@ def teacher_delete_question(request, subject_id, question_id):
     print("Deleted all question images")
     return redirect('teacher_add_question', subject_id=subject_id) 
 
+@login_required
 def subject_questions(request, subject_id):
     if request.user.is_teacher == -1:
         render(request, 'base/404.html')
@@ -225,6 +232,21 @@ def subject_questions(request, subject_id):
 
     return render(request, 'teacher/subject_questions.html', {'is_teacher':True, 'user':request.user,'rows': rows, 'subject':subject})
 
+
+@login_required
+def session_tests(request, session_id):
+    if request.user.is_teacher == -1:
+        return render(request, 'base/404.html') 
+    session = ClassSession.objects.get(id=session_id)
+    test_table_name = session.test_table_name
+    cursor = connection.cursor()
+    cursor.execute(f"SELECT * FROM {test_table_name}")
+    columns = [col[0] for col in cursor.description]  
+    tests = [dict(zip(columns, row)) for row in cursor.fetchall()] 
+    
+    return render(request, 'teacher/session_tests.html', {'is_teacher':True, 'user':request.user,'session': session, 'tests': tests})
+
+@login_required
 def test_create(request, session_id):
     if request.user.is_teacher == -1:
         return render(request, 'base/404.html') 
@@ -240,108 +262,203 @@ def test_create(request, session_id):
             no_of_questions = form.cleaned_data['no_of_questions']
             
             test_table_name = session.test_table_name
-            with connection.cursor() as cursor:
-                try:
-                    cursor.execute(f""" INSERT INTO {test_table_name} (heading, description, start_time, end_time, no_of_questions) VALUES (%s, %s, %s, %s, %s) """, [heading, description, start_time, end_time, no_of_questions])
+            cursor = connection.cursor() 
+            try:
+                cursor.execute(f""" INSERT INTO {test_table_name} (heading, description, start_time, end_time, no_of_questions) VALUES (%s, %s, %s, %s, %s) """, [heading, description, start_time, end_time, no_of_questions])
 
-                    test_id = cursor.lastrowid
+                test_id = cursor.lastrowid
 
-                    num_questions = form.cleaned_data['no_of_questions']
-                    query = (f""" INSERT INTO {session.test_questions_table_name} (test_id, question_id, marks) SELECT {test_id}, id, 1 FROM {session.subject.subjects_question_table_name} ORDER BY RANDOM() LIMIT {no_of_questions}; """)
-                    print(query)
-                    cursor.execute(f"""
-                        INSERT INTO {session.test_questions_table_name} (test_id, question_id, marks)
-                        SELECT %s, id, 1 FROM {session.subject.subjects_question_table_name}
-                        ORDER BY RANDOM() LIMIT %s;
-                    """, [test_id, no_of_questions])
-                    return redirect('dashboard')  
-                except Exception as e:
-                    messages.error(request, f'Error creating test: {e}')
+                num_questions = form.cleaned_data['no_of_questions']
+                # query = (f""" INSERT INTO {session.test_questions_table_name} (test_id, question_id, marks) SELECT {test_id}, id, 1 FROM {session.subject.subjects_question_table_name} ORDER BY RANDOM() LIMIT {no_of_questions}; """)
+                # print(query)
+                cursor.execute(f"""
+                    INSERT INTO {session.test_questions_table_name} (test_id, question_id, marks)
+                    SELECT %s, id, 1 FROM {session.subject.subjects_question_table_name}
+                    ORDER BY RANDOM() LIMIT %s;
+                """, [test_id, no_of_questions])
+                return redirect('teacher_test_edit_questions', session_id=session_id, test_id=test_id)  
+            except Exception as e:
+                messages.error(request, f'Error creating test: {e}')
     else:
         form = TestCreationForm(initial={'subject_question_table_name': session.subject.subjects_question_table_name})
 
     return render(request, 'teacher/test_create.html', {'is_teacher':True, 'user':request.user,'form': form})
 
-def session_tests(request, session_id):
-    if request.user.is_teacher == -1:
-        return render(request, 'base/404.html') 
-    session = ClassSession.objects.get(id=session_id)
-    test_table_name = session.test_table_name
-    cursor = connection.cursor()
-    cursor.execute(f"SELECT * FROM {test_table_name}")
-    columns = [col[0] for col in cursor.description]  
-    tests = [dict(zip(columns, row)) for row in cursor.fetchall()] 
-    
-    return render(request, 'teacher/session_tests.html', {'is_teacher':True, 'user':request.user,'session': session, 'tests': tests})
-
-
+@login_required
 def test_edit(request, session_id, test_id):
     if request.user.is_teacher == -1:
         return render(request, 'base/404.html') 
 
     session = get_object_or_404(ClassSession, id=session_id)
     test_table_name = session.test_table_name
+    # Fetch test data from the database using SQL queries
+    with connection.cursor() as cursor:
+        cursor.execute(f"SELECT * FROM {test_table_name} WHERE id = {test_id}")
+        row = cursor.fetchone()
+        if row:
+            test_data = {
+                'heading': row[1],
+                'description': row[2],
+                'start_time': row[3],
+                'end_time': row[4],
+                'no_of_questions': row[5],
+                'subject_question_table_name': session.subject.subjects_question_table_name
+            }
+            # print(test_data)
+            if request.method == 'POST':
+                form = TestCreationForm(request.POST,initial={'subject_question_table_name': session.subject.subjects_question_table_name})
+                if form.is_valid():
+                    # Update test data in the database
+                    update_query = f"""
+                        UPDATE {test_table_name} 
+                        SET heading = %s, description = %s, start_time = %s, end_time = %s, no_of_questions = %s
+                        WHERE id = %s
+                    """
+                    cursor.execute(update_query, [
+                        form.cleaned_data['heading'],
+                        form.cleaned_data['description'],
+                        form.cleaned_data['start_time'],
+                        form.cleaned_data['end_time'],
+                        form.cleaned_data['no_of_questions'],
+                        test_id
+                    ])
+                    cursor = connection.cursor()
+                    cursor.execute(f"SELECT * FROM {session.test_questions_table_name} WHERE test_id = {test_id}")
+                    rows = cursor.fetchall()
 
+                    row_count = len(rows)
+                    # print(row_count , form.cleaned_data['no_of_questions'])
+
+                    # print(row_count - form.cleaned_data['no_of_questions'])
+                    if row_count > form.cleaned_data['no_of_questions']  :
+                        excess_questions_count = row_count - form.cleaned_data['no_of_questions']
+                        # print("excess_questions_count: ",excess_questions_count)
+                        cursor.execute(f"DELETE FROM {session.test_questions_table_name} WHERE test_id = {test_id} ORDER BY RANDOM() LIMIT {excess_questions_count}")
+
+                    elif row_count < form.cleaned_data['no_of_questions']:
+                        additional_questions_count = abs(test_data['no_of_questions'] - form.cleaned_data['no_of_questions'] )
+                        print("additional_questions_count: ",additional_questions_count)
+    
+                        cursor.execute(f"""INSERT INTO {session.test_questions_table_name} (test_id, question_id, marks)
+                        SELECT {test_id}, sq.id, 1
+                        FROM {session.subject.subjects_question_table_name} AS sq
+                        LEFT JOIN {session.test_questions_table_name} AS tq 
+                            ON sq.id = tq.question_id AND tq.test_id = {test_id}
+                        WHERE tq.question_id IS NULL
+                        ORDER BY RANDOM()
+                        LIMIT {additional_questions_count}""")
+
+
+                    return redirect('teacher_test_edit_questions', session_id=session_id, test_id=test_id) 
+            else:
+                form = TestCreationForm(initial=test_data)
+            return render(request, 'teacher/test_edit.html', {'is_teacher': True, 'user': request.user, 'form': form,'session_id':session_id, 'test_id': test_id})
+        else: 
+            return HttpResponse("Test not found", status=404)
+
+@login_required
+def test_delete(request, session_id, test_id):
+    if request.user.is_teacher == -1:
+        return render(request, 'base/404.html') 
+
+    session = get_object_or_404(ClassSession, id=session_id)
+    test_table_name = session.test_table_name
     if request.method == 'POST':
-        form = TestCreationForm(request.POST, initial={'subject_question_table_name': session.subject.subjects_question_table_name})
-        if form.is_valid():
-            heading = form.cleaned_data['heading']
-            description = form.cleaned_data['description']
-            start_time = form.cleaned_data['start_time']
-            end_time = form.cleaned_data['end_time']
-            no_of_questions = form.cleaned_data['no_of_questions']
-            
-            # with transaction.atomic():
-            with connection.cursor() as cursor:
-                cursor.execute(f"""
-                    UPDATE {test_table_name} 
-                    SET heading = %s, description = %s, start_time = %s, end_time = %s, no_of_questions = %s
-                    WHERE id = %s;
-                """, [heading, description, start_time, end_time, no_of_questions, test_id])
+        with connection.cursor() as cursor:
+            cursor.execute(f"DELETE FROM {session.test_questions_table_name} WHERE test_id = {test_id}")
+        
+        with connection.cursor() as cursor:
+            cursor.execute(f"DELETE FROM {session.response_table_name} WHERE test_id = {test_id}")
 
-                # Update marks for existing questions
-                for key, value in request.POST.items():
-                    if key.startswith('question_') and key.endswith('_marks'):
-                        question_id = key.split('_')[1]
-                        marks = value
-                        cursor.execute(f"""
-                            UPDATE {session.test_questions_table_name} 
-                            SET marks = %s
-                            WHERE test_id = %s AND question_id = %s;
-                        """, [marks, test_id, question_id])
+        with connection.cursor() as cursor:
+            cursor.execute(f"DELETE FROM {session.result_table_name} WHERE test_id = {test_id}")
 
-                # Add new questions if requested
-                new_question_ids = request.POST.getlist('new_question_ids')
-                new_question_marks = request.POST.getlist('new_question_marks')
-                for question_id, marks in zip(new_question_ids, new_question_marks):
-                    if question_id and marks:
-                        cursor.execute(f"""
-                            INSERT INTO {session.test_questions_table_name} (test_id, question_id, marks)
-                            VALUES (%s, %s, %s);
-                        """, [test_id, question_id, marks])
-
-                # Add random questions if requested
-                if 'add_random_questions' in request.POST:
-                    # Get IDs of questions not already in the test
-                    cursor.execute(f"""
-                        SELECT id FROM {session.subject.subjects_question_table_name}
-                        WHERE id NOT IN (
-                            SELECT question_id FROM {session.test_questions_table_name}
-                            WHERE test_id = %s
-                        )
-                        ORDER BY RANDOM() LIMIT %s;
-                    """, [test_id, no_of_questions - cursor.rowcount])
-                    random_question_ids = cursor.fetchall()
-
-                    # Add random questions to the test
-                    for question_id in random_question_ids:
-                        cursor.execute(f"""
-                            INSERT INTO {session.test_questions_table_name} (test_id, question_id, marks)
-                            VALUES (%s, %s, 1);
-                        """, [test_id, question_id[0]])
-
-                return redirect('dashboard')  
+        with connection.cursor() as cursor:
+            cursor.execute(f"DELETE FROM {session.test_table_name} WHERE id = {test_id}")
+ 
+        return redirect('teacher_session_tests', session_id=session_id)   
     else:
-        form = TestCreationForm(initial={'subject_question_table_name': session.subject.subjects_question_table_name})
+        return render(request, 'teacher/test_delete.html', {'is_teacher': True, 'user': request.user, 'test_id': test_id})
 
-    return render(request, 'teacher/test_edit.html', {'is_teacher': True, 'user': request.user, 'form': form, 'test_id': test_id})
+@login_required
+def test_edit_questions(request, session_id, test_id):
+    if request.user.is_teacher == -1:
+        return render(request, 'base/404.html') 
+
+    session = get_object_or_404(ClassSession, id=session_id)
+    test_table_name = session.test_table_name
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'delete_question':
+            # Delete the question from test_questions_table_name
+            question_id = request.POST.get('question_id')
+            with connection.cursor() as cursor:
+                cursor.execute(f"DELETE FROM {session.test_questions_table_name} WHERE test_id = {test_id} AND question_id = {question_id}")
+            # Decrement the count of questions in test_table_name
+            with connection.cursor() as cursor:
+                cursor.execute(f"UPDATE {session.test_table_name} SET no_of_questions = no_of_questions - 1 WHERE id = {test_id}")
+            messages.success(request, 'Question deleted successfully.')
+            return redirect('teacher_test_edit_questions', session_id=session_id, test_id=test_id)
+        elif action == 'get_random_question':
+            # Check if there are available questions in subject
+            with connection.cursor() as cursor:
+                cursor.execute(f"SELECT COUNT(*) FROM {session.subject.subjects_question_table_name}")
+                row = cursor.fetchone()
+                total_questions = row[0] if row else 0
+            # Check if test_questions_table_name already contains all questions from the subject
+            with connection.cursor() as cursor:
+                cursor.execute(f"SELECT COUNT(*) FROM {session.test_questions_table_name} WHERE test_id = {test_id}")
+                row = cursor.fetchone()
+                questions_in_test = row[0] if row else 0
+            if questions_in_test >= total_questions:
+                messages.warning(request, 'Add questions in subject to increase more.')
+            else:
+                # Get a random question from subjects_question_table_name that is not already in the test
+                with connection.cursor() as cursor:
+                    cursor.execute(f"""INSERT INTO {session.test_questions_table_name} (test_id, question_id, marks) 
+                        SELECT {test_id}, sq.id, 1
+                        FROM {session.subject.subjects_question_table_name} AS sq
+                        LEFT JOIN {session.test_questions_table_name} AS tq 
+                            ON sq.id = tq.question_id AND tq.test_id = {test_id}
+                        WHERE tq.question_id IS NULL
+                        ORDER BY RANDOM()
+                        LIMIT 1""") 
+                    random_question = cursor.fetchone() 
+                    cursor.execute(f"UPDATE {session.test_table_name} SET no_of_questions = no_of_questions + 1 WHERE id = {test_id}")
+            return redirect('teacher_test_edit_questions',session_id=session_id, test_id=test_id)
+    else:
+        # Fetch questions associated with the test
+        with connection.cursor() as cursor:
+            cursor.execute(f"""SELECT 
+        tq.question_id, sq.author, sq.question, 
+        qi.image AS question_image, 
+        sq.option1, oi1.image AS option1_image, 
+        sq.option2, oi2.image AS option2_image, 
+        sq.option3, oi3.image AS option3_image, 
+        sq.option4, oi4.image AS option4_image, 
+        sq.correct_option, sq.explanation, 
+        ei.image AS explanation_image, 
+        tq.marks 
+    FROM 
+        {session.test_questions_table_name} AS tq 
+    JOIN 
+        {session.subject.subjects_question_table_name} AS sq 
+    ON 
+        tq.question_id = sq.id 
+    LEFT JOIN 
+        administration_uploadedimage AS qi ON sq.question_image = qi.id 
+    LEFT JOIN 
+        administration_uploadedimage AS oi1 ON sq.option1_image = oi1.id 
+    LEFT JOIN 
+        administration_uploadedimage AS oi2 ON sq.option2_image = oi2.id 
+    LEFT JOIN 
+        administration_uploadedimage AS oi3 ON sq.option3_image = oi3.id 
+    LEFT JOIN 
+        administration_uploadedimage AS oi4 ON sq.option4_image = oi4.id 
+    LEFT JOIN 
+        administration_uploadedimage AS ei ON sq.explanation_image = ei.id 
+    WHERE 
+        tq.test_id = {test_id}""")
+            questions = cursor.fetchall()
+        return render(request, 'teacher/test_edit_questions.html', {'is_teacher': True, 'user': request.user,'test_id': test_id, 'questions': questions})
+    

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Test Details</h1>
+    
+    {% if test_details %}
+        <h2>{{ heading }}</h2>
+        <p>Description: {{ description }}</p>
+        <p>Start Time: {{ start_time }}</p>
+        <p>End Time: {{ end_time }}</p>
+        <p>Number of Questions: {{ no_of_questions }}</p>
+        
+        {% if take_test_button %}
+            <a href="{% url 'student_test' session_id=session_id test_id=test_id %}" class="btn btn-primary">Take Test</a>
+        {% else %}
+        <a href="{% url 'student_test_result' session_id=session_id test_id=test_id %}" class="btn btn-primary">See Result</a>
+        {% endif %}
+        
+        {% if result_message %}
+            <p>{{ result_message }}</p>
+        {% endif %}
+    {% else %}
+        <p>Test details not found. Please try again later.</p>
+    {% endif %}
+</div>
+{% endblock %}

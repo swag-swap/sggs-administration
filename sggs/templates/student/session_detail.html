@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Session Details - {{ session.subject.name }}</h1>  
+    <p>Attendence: <b>{{ attendance_count }} / {{total_active_days}}</b> </p>
+    <p>Attendence Percentage: <b>{{ attendance_percentage }} %</b></p> 
+</div>
+<div class="container mt-5"> 
+    <h2>Active Tests</h2>
+    {% if active_tests %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Heading</th> 
+                <th>Start Time</th>
+                <th>End Time</th> 
+                <th>Test Detail</th> 
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for test in active_tests %}
+            <tr>
+                <td>{{ test.1 }}</td> 
+                <td>{{ test.3 }}</td>
+                <td>{{ test.4 }}</td> 
+                <td><a href="{% url 'student_test_detail' session_id=session.id test_id=test.0 %}" class="btn btn-primary">View Details</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No active tests in this session.</p>
+    {% endif %}
+
+    <h2>Previous Tests</h2>
+    {% if previous_tests %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Heading</th>
+                <th>Start Time</th>
+                <th>End Time</th> 
+                <th>Test Detail</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for test in previous_tests %}
+            <tr>
+                <td>{{ test.1 }}</td> 
+                <td>{{ test.3 }}</td>
+                <td>{{ test.4 }}</td>
+                <td><a href="{% url 'student_test_detail' session_id=session.id test_id=test.0 %}" class="btn btn-primary">View Details</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No previous tests in this session.</p>
+    {% endif %}
+</div>
+{% endblock %}

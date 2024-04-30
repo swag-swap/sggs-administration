@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Attendance Information</h1>
+    <div class="row mt-3">
+        {% for subject, data in attendance_data.items %}
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ subject }}</h5>
+                    <p class="card-text"><b>{{ data.attendance_count }} / {{ data.total_active_days }}</b></p>
+                    <p class="card-text">Attendance Percentage: {{ data.attendance_percentage }}%</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

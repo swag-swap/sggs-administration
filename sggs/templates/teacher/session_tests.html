@@ -6,12 +6,17 @@
     {% if tests %}
     <div class="list-group mt-3">
         {% for test in tests %}
-        <a href="{% url 'teacher_test_edit' session_id=session.id test_id=test.id %}" class="list-group-item list-group-item-action">
+        <div class="list-group-item list-group-item-action">
             <h5 class="mb-1">{{ test.heading }}</h5>
             <p class="mb-1">{{ test.description }}</p>
             <small>Start Time: {{ test.start_time }} - End Time: {{ test.end_time }}</small>
             <span class="badge badge-primary badge-pill">{{ test.no_of_questions }} Questions</span>
-        </a>
+            <form  action="{% url 'teacher_test_delete' session_id=session.id test_id=test.id %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm float-right ml-2">Delete</button>
+            </form>
+            <a href="{% url 'teacher_test_edit' session_id=session.id test_id=test.id %}" class="btn btn-primary btn-sm float-right">Edit</a>
+        </div>
         {% endfor %}
     </div>
     {% else %}

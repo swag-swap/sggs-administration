@@ -1,0 +1,256 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-5">
+    <h1>Test Details</h1>
+
+    {% if test_details %}
+    <h2>{{ test_details.0 }}</h2>
+    <p>Description: {{ test_details.1 }}</p>
+    <p>Start Time: {{ test_details.2 }}</p>
+    <p>End Time: {{ test_details.3 }}</p>
+    <p>Number of Questions: {{ test_details.4 }}</p>
+
+    <form
+        id="testForm" 
+    >
+        {% csrf_token %} 
+        {% for question in shuffled_questions %}
+        <div class="card mt-3 question">
+            <div class="card-body">
+                <div
+                    class="d-flex justify-content-between align-items-center mb-2"
+                >
+                    <h5 class="card-title font-weight-bold">
+                        Question {{ forloop.counter }}--> {{ question.0 }}
+                    </h5>
+                    <div class="marks-badge">
+                        Marks:
+                        <span class="badge badge-secondary"
+                            >{{ question.12 }}</span
+                        >
+                    </div>
+                </div>
+                <div class="rounded p-2 my-2">
+                    <h5 class="card-title">{{ question.2 }}</h5>
+                    {% if question.3 %}
+                    <img
+                        src="/media/{{ question.3 }}"
+                        alt="Question Image"
+                        class="img-fluid m-4"
+                        width="200"
+                        height="150"
+                    />
+                    {% endif %}
+                </div>
+                <div class="form-check mx-4 border rounded p-1 my-2">
+                    <input
+                        class="form-check-input"
+                        type="radio"
+                        name="{{ forloop.counter }}"
+                        id="1_{{ question.0 }}"
+                        value="1"
+                    />
+                    <label
+                        class="form-check-label w-100"
+                        for="1_{{ question.0 }}"
+                        >{{ question.4 }} <br />
+                        {% if question.5 %}
+                        <img
+                            src="/media/{{ question.5 }}"
+                            alt="Option 1 Image"
+                            class="img-fluid m-4"
+                            width="200"
+                            height="150"
+                        />
+                        {% endif %}
+                    </label>
+                </div>
+                <div class="form-check mx-4 border rounded p-1 my-2">
+                    <input
+                        class="form-check-input"
+                        type="radio"
+                        name="{{ forloop.counter }}"
+                        id="2_{{ question.0 }}"
+                        value="2"
+                    />
+                    <label
+                        class="form-check-label w-100"
+                        for="2_{{ question.0 }}"
+                        >{{ question.6 }} <br />
+                        {% if question.7 %}
+                        <img
+                            src="/media/{{ question.7 }}"
+                            alt="Option 2 Image"
+                            class="img-fluid m-4"
+                            width="200"
+                            height="150"
+                        />
+                        {% endif %}
+                    </label>
+                </div>
+                <div class="form-check mx-4 border rounded p-1 my-2">
+                    <input
+                        class="form-check-input"
+                        type="radio"
+                        name="{{ forloop.counter }}"
+                        id="3_{{ question.0 }}"
+                        value="3"
+                    />
+                    <label
+                        class="form-check-label w-100"
+                        for="3_{{ question.0 }}"
+                        >{{ question.8 }} <br />
+                        {% if question.9 %}
+                        <img
+                            src="/media/{{ question.9 }}"
+                            alt="Option 3 Image"
+                            class="img-fluid m-4"
+                            width="200"
+                            height="150"
+                        />
+                        {% endif %}
+                    </label>
+                </div>
+                <div class="form-check mx-4 border rounded p-1 my-2">
+                    <input
+                        class="form-check-input"
+                        type="radio"
+                        name="{{ forloop.counter }}"
+                        id="4_{{ question.0 }}"
+                        value="4"
+                    />
+                    <label
+                        class="form-check-label w-100"
+                        for="4_{{ question.0 }}"
+                        >{{ question.10 }} <br />
+                        {% if question.11 %}
+                        <img
+                            src="/media/{{ question.11 }}"
+                            alt="Option 4 Image"
+                            class="img-fluid m-4"
+                            width="200"
+                            height="150"
+                        />
+                        {% endif %}
+                    </label>
+                </div>
+                <input
+                    type="hidden"
+                    name="question{{ forloop.counter }}"
+                    value="{{ question.0 }}"
+                />
+            </div>
+        </div>
+        {% endfor %}
+        <button id="submitTestButton" type="submit" class="btn btn-info btn-lg my-4">
+            Submit Test
+        </button>
+    </form>
+
+    {% else %}
+    <p>Test details not found. Please try again later.</p>
+    {% endif %}
+</div>
+
+<script>
+    function setSelectedOptions(selectedOptions, expirationTime) {
+        const now = new Date();
+        const expires = new Date(expirationTime);
+        const timeUntilExpires = expires.getTime() - now.getTime();
+        document.cookie = `selected_options=${selectedOptions.join('|')};expires=${expires.toUTCString()};path=/student/session/{{session_id}}/test/{{test_id}};`;
+    }
+
+    function getSelectedOptions() {
+        const cookies = document.cookie.split('; ');
+        for (const cookie of cookies) {
+            const [name, value] = cookie.split('=');
+            if (name === 'selected_options') {
+                return value.split('|');
+            }
+        }
+        return [];
+    }
+
+    const testEndTimeString = '{{ test_details.3 }}';
+    const testEndTime = new Date(testEndTimeString);
+    const testEndTimeUTCString = testEndTime.toUTCString();
+
+    
+    window.onload = function () {
+        const url = window.location.href;
+        const expectedUrlPattern = '/student/session/{{session_id}}/test/{{test_id}}'; // Adjust the pattern as needed
+        if (url.includes(expectedUrlPattern)) {
+            const selectedOptions = getSelectedOptions();
+            selectedOptions.forEach((selectedOption) => {
+                const radioButton = document.getElementById(selectedOption);
+                if (radioButton) {
+                    radioButton.checked = true;
+                }
+            });
+        }
+    };
+
+    document.querySelectorAll('.form-check-input').forEach((radioButton) => {
+        radioButton.addEventListener('click', function () {
+            const url = window.location.href;
+            const expectedUrlPattern = '/student/session/{{session_id}}/test/{{test_id}}'; 
+            if (url.includes(expectedUrlPattern)) {
+                const selectedOptions = [];
+                document.querySelectorAll('.form-check-input:checked').forEach((selected) => {
+                    selectedOptions.push(selected.id);
+                });
+                setSelectedOptions(selectedOptions, testEndTimeUTCString);
+            }
+        });
+    });
+
+    document.getElementById('submitTestButton').addEventListener('click', function(e) {
+        
+        e.preventDefault();
+        var selectedOptions = [];
+        var questions = document.getElementsByClassName('question');
+
+        for (var i = 0; i < questions.length; i++) {
+            var selectedOption = questions[i].querySelector('input:checked');
+            
+            if (selectedOption) {
+                var optionIdParts = selectedOption.id.split('_');
+                var questionId = optionIdParts[1];
+                var optionNumber = optionIdParts[0];
+                
+                selectedOptions.push({ question_id: questionId, selected_option: optionNumber });
+            }
+            else {
+                questionId = (questions[i].querySelector('input').id.split('_'))[1]
+                selectedOptions.push({ question_id: questionId, selected_option: 0 });
+            }
+        }
+        console.log(selectedOptions);
+        var data = {
+            selected_options: selectedOptions
+        };
+
+        fetch('/student/session/{{session_id}}/test/{{test_id}}/response/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
+            },
+            body: JSON.stringify(data)
+        })
+        .then(function(response) {
+            if (response.ok) { 
+                console.log('Test response submitted successfully.');
+            } else { 
+                console.error('Error submitting test response.');
+            }
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+        });
+    });
+
+</script>
+
+
+
+{% endblock %}

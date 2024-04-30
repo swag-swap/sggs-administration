@@ -42,7 +42,7 @@ class OTP(models.Model):
     email = models.EmailField(unique=True)
     otp = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField(default=timezone.now() + timezone.timedelta(minutes=5))  
+    expires_at = models.DateTimeField(default=timezone.now() + timezone.timedelta(minutes=15))  
 
     def is_valid(self):
         return self.expires_at > timezone.now()
@@ -167,7 +167,7 @@ class Student(models.Model):
     reg_no = models.CharField(max_length=20)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='student_department', default=None, null=True)
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name='student_semester', default=None, null=True)
-    year = models.IntegerField()
+    year = models.IntegerField(default=2000)
     roll_number = models.CharField(max_length=20, default='')
     date_of_birth = models.DateField(default='2000-01-01')
     address = models.TextField(default='')
@@ -200,7 +200,7 @@ class Division(models.Model):
         if Division.objects.exclude(pk=self.pk).filter(name__iexact=upper_name).exists():
             raise ValidationError('Division with this name already exists.')
 
-class ClassSession(models.Model):
+class ClassSession(models.Model):   
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     teacher = models.ManyToManyField(Teacher, related_name='session_teachers') 
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
@@ -322,7 +322,7 @@ class ClassSession(models.Model):
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         test_id INTEGER REFERENCES {test_table_name}(id),
                         student_id INTEGER REFERENCES administration_student(id),
-                        question_id INTEGER REFERENCES {test_questions_table_name}(id),
+                        question_id INTEGER REFERENCES {self.subject.subjects_question_table_name}(id),
                         option_selected INTEGER
                     );
                 """) 
@@ -443,7 +443,6 @@ def handle_class_session_post_delete(sender, instance, **kwargs):
         print(f"Dropping the table {attendence_table_name}...")
     except Exception as e:
         print(f"Error dropping table {attendence_table_name}: {e}")
- 
 
 class Notification(models.Model):
     NOTIFICATION_TYPES = [
@@ -456,7 +455,10 @@ class Notification(models.Model):
         (7, 'Attendance'),
         (8, 'Assignment Submission'),
         (9, 'Grading'),
-        (10, 'System Maintenance'),
+        (10, 'System Maintenance'), 
+        (11, 'Student Profile Update'),
+        (12, 'New Administrator Request'),
+
         # Add more notification types as needed
     ]
 

@@ -5,11 +5,10 @@ local-cdn/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-*$py.class
-
+*$py.class 
 # C extensions
 *.so
-
+static/
 # Distribution / packaging
 .Python
 build/

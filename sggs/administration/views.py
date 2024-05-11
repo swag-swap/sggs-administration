@@ -6,11 +6,16 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from .forms import StudentForm, RegistrationForm, LoginForm, TeacherForm, AdministratorForm, ClassSessionForm, SubjectForm, DepartmentForm, SessionFilterForm, StudentSearchForm
 from django.http import JsonResponse, QueryDict
-from .models import CustomUser, Administrator, Student, Notification, OTP, Teacher, ClassSession, Subject, Department, Semester
+from administration.models import *
+from teacher.models import *
+from student.models import *
+from library.models import *
+from .forms import *
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login  as auth_login
 from django.contrib.auth import logout as auth_logout
 import logging, json, random
+import pandas as pd
 from django.db import transaction, connection
 
 
@@ -147,7 +152,7 @@ def department_edit(request, department_id):
             form = DepartmentForm(request.POST, instance=department)
             if form.is_valid():
                 form.save() 
-                return redirect('admin_department_list')  # Redirect to department list page
+                return redirect('admin_department_list')  
         else:
             form = DepartmentForm(instance=department)
         return render(request, 'administration/department_edit.html', {'is_administration': True, 'user': request.user,'form': form})
@@ -171,6 +176,49 @@ def department_list(request):
     else:
         return render(request, 'base/404.html')
 
+
+
+# @login_required
+def add_teacher(request):
+    # if not request.user.is_administrator == 1:
+    #     return render(request, 'base/404.html')  
+    
+    # administrator = Administrator.objects.get(user = request.user) 
+    # if request.method == 'POST':
+    #     excel_file = request.FILES['excel_file']
+    #     attendance_date = request.POST['attendance_date'] 
+    #     df = pd.read_excel(excel_file) 
+    #     cursor = connection.cursor()
+
+    #     for index, row in df.iterrows():
+    #         email = row['Email']
+    #         first_name = row['First name']
+    #         middle_name = row['Middle name']
+    #         surname = row['Surname']
+    #         departments = row['Departments'].split(', ')
+    #         subjects = row['Subjects'].split(', ')
+    #     user, created = CustomUser.objects.get_or_create( email=email )
+    #     if not created:
+    #         user.first_name = first_name
+    #         user.last_name = surname
+    #         user.password = first_name+surname
+    #         user.save()
+
+    #     teacher, teacher_created = Teacher.objects.get_or_create(user=user)
+    #     teacher.departments.clear()
+    #     teacher.subjects.clear()
+    #     for dept_name in departments:
+    #         department, _ = Department.objects.get_or_create(name=dept_name)
+    #         teacher.departments.add(department)
+    #     for subject_name in subjects:
+    #         subject, _ = Subject.objects.get_or_create(name=subject_name)
+    #         teacher.subjects.add(subject)
+    #     teacher.save()
+
+    #     return JsonResponse({'message': 'Teachers added'})
+    
+    return render(request, 'teacher/teacher_detail.html', {'is_teacher':True, 'user':request.user})
+    
 
 
 @login_required
@@ -208,6 +256,8 @@ def teacher_details(request, teacher_id):
     sessions = ClassSession.objects.filter(department__in=departments, active=True)
     return render(request, 'administration/teacher_detail.html', {'is_administration': True, 'user': request.user,'teacher': teacher, 'sessions': sessions})
 
+def add_teacher(request):
+    return 0
 
 
 def calculate_attendance_percentage(session_id):
@@ -284,10 +334,361 @@ def manage_student_detail(request, id):
         'attendance_data': attendance_data
     })
 
-
+def add_student(request):
+    return 0
 
 
 #Notifications
+
+def notifications(request):
+    if not request.user.is_administrator == 1:
+        return render(request, 'base/404.html')  
+    # Student profile approve notifications
+    student_profile_updates = Notification.objects.filter(notification_type=3, for_administrator=True)
+
+    # Teacher profile approve notifications
+    teacher_profile_updates = Notification.objects.filter(notification_type=2, for_administrator=True)
+
+    # Administrator profile approve notifications
+    administrator_profile_updates = Notification.objects.filter(notification_type=4, for_administrator=True)
+
+    # Librarian profile approve notifications
+    librarian_profile_updates = Notification.objects.filter(notification_type=5, for_administrator=True)
+
+    return render(request, 'administration/view_notification.html', {
+        'student_profile_updates': student_profile_updates,        
+        'teacher_profile_updates': teacher_profile_updates, 
+        'administrator_profile_updates': administrator_profile_updates,
+        'librarian_profile_updates': librarian_profile_updates,
+        'is_administration': True,
+        'user': request.user,
+    })
+
+def approve_student_profile(request, user_id):
+    if not request.user.is_administrator == 1:
+        return render(request, 'base/404.html')  
+    
+
+    if request.method == 'POST': 
+        if 'approve' in request.POST: 
+            change_user = get_object_or_404(CustomUser, id=user_id)
+            student_edited = get_object_or_404(Student_edited, user=change_user) 
+            fee_edited = get_object_or_404(Fee_edited, student_edited=student_edited)
+             
+            student, student_created = Student.objects.get_or_create(
+                user=student_edited.user,
+                defaults={
+                    'reg_no': student_edited.reg_no,
+                    'department': student_edited.department,
+                    'semester': student_edited.semester,
+                    'year': student_edited.year,
+                    'roll_number': student_edited.roll_number,
+                    'date_of_birth': student_edited.date_of_birth,
+                    'address': student_edited.address,
+                    'contact_number': student_edited.contact_number
+                }
+            )
+ 
+            fee, fee_created = Fee.objects.get_or_create(
+                student=student,
+                defaults={
+                    'year_1_fee': fee_edited.year_1_fee,
+                    'year_2_fee': fee_edited.year_2_fee,
+                    'year_3_fee': fee_edited.year_3_fee,
+                    'year_4_fee': fee_edited.year_4_fee
+                }
+            )
+
+            if not student_created or not fee_created: 
+                student.reg_no = student_edited.reg_no
+                student.department = student_edited.department
+                student.semester = student_edited.semester
+                student.year = student_edited.year
+                student.roll_number = student_edited.roll_number
+                student.date_of_birth = student_edited.date_of_birth
+                student.address = student_edited.address
+                student.contact_number = student_edited.contact_number
+                student.save()
+
+                fee.year_1_fee = fee_edited.year_1_fee
+                fee.year_2_fee = fee_edited.year_2_fee
+                fee.year_3_fee = fee_edited.year_3_fee
+                fee.year_4_fee = fee_edited.year_4_fee
+                fee.save()
+
+ 
+            student_edited.delete()
+            fee_edited.delete()
+
+            change_user.is_student = 1
+            change_user.save()
+            Notification.objects.get(user=change_user, notification_type=3).delete()
+
+            Notification.objects.create(
+                user=request.user,
+                message='Your profile has been approved.',
+                notification_type=13,
+                student=student,
+            )
+            print("Approved")
+
+            return redirect('admin_home') 
+        
+        elif 'reject' in request.POST:
+            # Handle rejection action
+            form = RejectionForm(request.POST)
+            if form.is_valid():
+                rejection_message = form.cleaned_data.get('rejection_message') 
+                change_user = get_object_or_404(CustomUser, id=user_id)
+                print('reject')
+                try:
+                    noti = Notification.objects.get(user=change_user, notification_type=3)
+                    noti.delete()
+                except :
+                    return redirect('admin_home')
+                
+                Notification.objects.create(
+                    user=request.user,
+                    message=f'Your profile has been rejected. Reason: {rejection_message}',
+                    notification_type=14,
+                    to_user=change_user,
+                )
+                print("Rejected")
+                return redirect('admin_home')   
+        else:
+            return redirect('approve_student_profile', user_id=user_id) 
+    change_user = get_object_or_404(CustomUser, id=user_id)
+    student_edited = get_object_or_404(Student_edited, user=change_user) 
+    fee_edited = get_object_or_404(Fee_edited, student_edited=student_edited)
+    form = RejectionForm()
+
+    return render(request, 'administration/approve_student_profile.html', {
+        'student': student_edited,
+        'fee': fee_edited,
+        'is_administrator': True,
+        'user': request.user,
+        'form': form
+    })
+
+
+def approve_teacher_profile(request, user_id):
+
+    if not request.user.is_administrator == 1:
+        return render(request, 'base/404.html')  
+    
+
+    if request.method == 'POST': 
+        if 'approve' in request.POST: 
+            change_user = get_object_or_404(CustomUser, id=user_id)
+            teacher_edited = get_object_or_404(Teacher_edited, user=change_user)  
+             
+            teacher, teacher_created = Teacher.objects.get_or_create(
+                user=teacher_edited.user,
+            ) 
+
+            if not teacher_created :  
+                teacher.departments.set(teacher_edited.departments.all()),
+                teacher.subjects.set(teacher_edited.subjects.all()) 
+                teacher.save() 
+
+ 
+            teacher_edited.delete()
+
+            change_user.is_teacher = 1
+            change_user.save()
+            Notification.objects.get(user=change_user, notification_type=2).delete()
+
+            Notification.objects.create(
+                user=request.user,
+                message='Your profile has been approved.',
+                notification_type=13,
+                teacher=teacher,
+            )
+            print("Approved")
+
+            return redirect('admin_home') 
+        
+        elif 'reject' in request.POST: 
+            form = RejectionForm(request.POST)
+            if form.is_valid():
+                rejection_message = form.cleaned_data.get('rejection_message') 
+                print('reject')
+
+                change_user = get_object_or_404(CustomUser, id=user_id)
+                try:
+                    noti = Notification.objects.get( user=change_user, notification_type=2)
+                    noti.delete()
+                except :
+                    return redirect('admin_home')
+
+                Notification.objects.create(
+                    user=request.user,
+                    message=f'Your profile has been rejected. Reason: {rejection_message}',
+                    notification_type=14,
+                    to_user=change_user,
+                )
+                print("Rejected")
+                return redirect('admin_home')   
+        else:
+            return redirect('approve_teacher_profile', user_id=user_id) 
+        
+    change_user = get_object_or_404(CustomUser, id=user_id)
+    teacher_edited = get_object_or_404(Teacher_edited, user=change_user) 
+    form = RejectionForm()
+
+    return render(request, 'administration/approve_teacher_profile.html', {
+        'teacher': teacher_edited,
+        'is_administrator': True,
+        'user': request.user,
+        'form': form
+    })
+
+def approve_administration_profile(request, user_id):
+
+    if not request.user.is_administrator == 1:
+        return render(request, 'base/404.html')  
+    
+
+    if request.method == 'POST': 
+        if 'approve' in request.POST: 
+            change_user = get_object_or_404(CustomUser, id=user_id)
+            administrator_edited = get_object_or_404(Administrator_edited, user=change_user)  
+             
+            administrator, administrator_created = Administrator.objects.get_or_create(
+                user=administrator_edited.user,
+            ) 
+
+            if not administrator_created :  
+                administrator.departments.set(administrator_edited.departments.all()),
+                administrator.subjects.set(administrator_edited.subjects.all()) 
+                administrator.save() 
+
+ 
+            administrator_edited.delete()
+
+            change_user.is_teacher = 1
+            change_user.save()
+            Notification.objects.get(user=change_user, notification_type=4).delete()
+
+            Notification.objects.create(
+                user=request.user,
+                message='Your profile has been approved.',
+                notification_type=13,
+                administrator=administrator,
+            )
+            print("Approved")
+
+            return redirect('admin_home') 
+        
+        elif 'reject' in request.POST: 
+            form = RejectionForm(request.POST)
+            if form.is_valid():
+                rejection_message = form.cleaned_data.get('rejection_message') 
+                print('reject')
+
+                change_user = get_object_or_404(CustomUser, id=user_id)
+                try:
+                    noti = Notification.objects.get(user=change_user, notification_type=4)
+                    noti.delete()
+                except :
+                    return redirect('admin_home')
+                
+                Notification.objects.create(
+                    user=request.user,
+                    message=f'Your profile has been rejected. Reason: {rejection_message}',
+                    notification_type=14,
+                    to_user=change_user,
+                )
+                print("Rejected")
+                return redirect('admin_home')   
+        else:
+            return redirect('approve_administration_profile', user_id=user_id) 
+        
+    change_user = get_object_or_404(CustomUser, id=user_id)
+    administrator_edited = get_object_or_404(Administrator_edited, user=change_user) 
+    form = RejectionForm()
+
+    return render(request, 'administration/approve_administrator_profile.html', {
+        'administrator': administrator_edited,
+        'is_administration': True,
+        'user': request.user,
+        'form': form
+    })
+
+
+
+def approve_librarian_profile(request, user_id):
+
+    if not request.user.is_administrator == 1:
+        return render(request, 'base/404.html')  
+    
+
+    if request.method == 'POST': 
+        if 'approve' in request.POST: 
+            change_user = get_object_or_404(CustomUser, id=user_id)
+            librarian_edited = get_object_or_404(Librarian_edited, user=change_user)  
+             
+            librarian, librarian_created = Librarian.objects.get_or_create(
+                user=librarian_edited.user,
+            ) 
+
+            if not librarian_created :   
+                librarian.save() 
+
+ 
+            librarian_edited.delete()
+
+            change_user.is_teacher = 1
+            change_user.save()
+            Notification.objects.get(user=change_user, notification_type=5).delete()
+
+            Notification.objects.create(
+                user=request.user,
+                message='Your profile has been approved.',
+                notification_type=13,
+                librarian=librarian,
+            )
+            print("Approved")
+
+            return redirect('admin_home') 
+        
+        elif 'reject' in request.POST: 
+            form = RejectionForm(request.POST)
+            if form.is_valid():
+                rejection_message = form.cleaned_data.get('rejection_message') 
+                print('reject')
+
+                change_user = get_object_or_404(CustomUser, id=user_id)
+                try:
+                    noti = Notification.objects.get(user=change_user, notification_type=5)
+                    noti.delete()
+                except :
+                    return redirect('admin_home')
+                
+                Notification.objects.create(
+                    user=request.user,
+                    message=f'Your Librarian profile has been rejected. Reason: {rejection_message}',
+                    notification_type=14,
+                    to_user=change_user,
+                )
+                print("Rejected")
+                return redirect('admin_home')   
+        else:
+            return redirect('approve_librarian_profile', user_id=user_id) 
+        
+    change_user = get_object_or_404(CustomUser, id=user_id)
+    librarian_edited = get_object_or_404(Librarian_edited, user=change_user) 
+    form = RejectionForm()
+
+    return render(request, 'administration/approve_librarian_profile.html', {
+        'librarian': librarian_edited,
+        'is_administration': True,
+        'user': request.user,
+        'form': form
+    })
+
+
+
 
 def send_approval_notification(model, role):
     admin = Administrator.objects.first()

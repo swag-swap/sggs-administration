@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6 mx-auto">
+                <h1 class="text-center mb-4">Welcome to SGGS College</h1>
+                {% if user.is_authenticated %}
+                    {% if user.is_student == 1 %}
+                        <a href="{% url 'student_home' %}" class="btn btn-primary btn-block">Student Dashboard</a>
+                    {% elif user.is_student == 0 %}
+                        <p class="text-center">Your request is being processed for Student role</p>
+                        <a href="{% url 'edit_student_detail' %}" class="btn btn-primary btn-block">Student Edit if not done</a>
+                    {% elif user.is_student == 2 %}
+                        <p class="text-center">Your request is being processed for Student role</p>
+                        <a href="{% url 'student_home' %}" class="btn btn-primary btn-block">You can go by previous Student profile </a> 
+                    {% endif %}
+                    {% if user.is_teacher == 1 %}
+                        <a href="{% url 'teacher_home' %}" class="btn btn-primary btn-block">Teacher Dashboard</a>
+                    {% elif user.is_teacher == 0 %}
+                        <p class="text-center">Your request is being processed for Teacher role</p>
+                        <a href="{% url 'edit_teacher_detail' %}" class="btn btn-primary btn-block">Teacher Edit if not done</a>
+                    {% elif user.is_teacher == 2 %}
+                        <p class="text-center">Your request is being processed for Teacher role</p>
+                        <a href="{% url 'teacher_home' %}" class="btn btn-primary btn-block">You can go by previous Teacher profile </a> 
+                    {% endif %}
+                    {% if user.is_administrator == 1 %}
+                        <a href="{% url 'admin_home' %}" class="btn btn-primary btn-block">Admin Dashboard</a>
+                    {% elif user.is_administrator == 0 %}
+                        <p class="text-center">Your request is being processed for administrator role</p>
+                        <a href="{% url 'edit_administrator_detail' %}" class="btn btn-primary btn-block">Administration Edit if not done</a>
+                    {% elif user.is_administrator == 2 %}
+                        <p class="text-center">Your request is being processed for Admin role</p>
+                        <a href="{% url 'admin_home' %}" class="btn btn-primary btn-block">You can go by previous Admin profile </a> 
+                    {% endif %}
+
+                    {% if user.is_librarian == 1 %}
+                        <a href="{% url 'library_home' %}" class="btn btn-primary btn-block">Librarian Dashboard</a>
+                    {% elif user.is_librarian == 0 %}
+                        <p class="text-center">Your request is being processed for librarian role</p>
+                        <a href="{% url 'edit_librarian_detail' %}" class="btn btn-primary btn-block">Librarian Edit if not done</a>
+                    {% elif user.is_librarian == 2 %}
+                        <p class="text-center">Your request is being processed for librarian role</p>
+                        <a href="{% url 'library_home' %}" class="btn btn-primary btn-block">You can go by previous librarian profile </a> 
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-success btn-block">Register</a>
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-block">Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

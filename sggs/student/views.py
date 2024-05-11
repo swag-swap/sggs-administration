@@ -6,8 +6,14 @@ from django.utils import timezone
 from administration.models import Student, ClassSession
 import random, json
 
+def validate(request):
+    if request.user.is_student < 1:
+        return False
+    return True
+    
+
 def home(request):
-    if request.user.is_student != 1:
+    if not validate(request):
         return render(request, 'base/404.html')
     student_department = request.user.student_profile.department
     student_year = request.user.student_profile.year
@@ -49,7 +55,7 @@ def home(request):
     return render(request, 'student/home.html', context)
 
 def sessions(request):
-    if request.user.is_student != 1:
+    if not validate(request):
         return render(request, 'base/404.html')
     student_department = request.user.student_profile.department
     student_year = request.user.student_profile.year
@@ -65,7 +71,7 @@ def sessions(request):
     return render(request, 'student/sessions.html', context)
 
 def session_detail(request, session_id):
-    if request.user.is_student != 1:
+    if not validate(request):
         return render(request, 'base/404.html')
     
     # Retrieve the specific session
@@ -127,7 +133,7 @@ def session_detail(request, session_id):
     return render(request, 'student/session_detail.html', context)
 
 def test_detail(request, session_id, test_id):
-    if request.user.is_student != 1:
+    if not validate(request):
         return render(request, 'base/404.html')
     
     # Retrieve the specific session
@@ -202,7 +208,7 @@ def test_detail(request, session_id, test_id):
         return render(request, 'base/404.html')
 
 def give_test(request, session_id, test_id):
-    if request.user.is_student != 1:
+    if not validate(request):
         return render(request, 'base/404.html')
     
     # Retrieve the specific session
@@ -275,7 +281,7 @@ def give_test(request, session_id, test_id):
     return render(request, 'student/give_test.html', context) 
 
 def submit_test_response(request, session_id, test_id):
-    if request.user.is_student != 1:
+    if not validate(request):
         return render(request, 'base/404.html')
     
     session = get_object_or_404(ClassSession, id=session_id)
@@ -317,9 +323,8 @@ def submit_test_response(request, session_id, test_id):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
 def test_result(request, session_id, test_id):
-
-    if request.user.is_student != 1:
-        return render(request, 'base/404.html') 
+    if not validate(request):
+        return render(request, 'base/404.html')
     
     session = get_object_or_404(ClassSession, id=session_id)
     student_department = request.user.student_profile.department
@@ -410,6 +415,8 @@ def test_result(request, session_id, test_id):
 
 
 def mark_attendance(request):
+    if not validate(request):
+        return render(request, 'base/404.html')
     if request.user.is_student == 1:
         if request.method == 'POST':
             student_id = Student.objects.get(user=request.user).id
@@ -429,4 +436,6 @@ def mark_attendance(request):
 
 
 def attendance_success(request):
+    if not validate(request):
+        return render(request, 'base/404.html')
     return render(request, 'attendance_success.html')

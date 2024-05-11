@@ -1,0 +1,36 @@
+{% extends "base.html" %} 
+{% block content %}
+<div class="container">
+    <h1>Student Profile Details</h1>
+    
+    <h2>Student Information</h2>
+    <p>Username: {{ student.user.username }}</p>
+    <!-- Display other student details -->
+    <p>Registration Number: {{ student.reg_no }}</p>
+    <p>Department: {{ student.department }}</p>
+    <p>Semester: {{ student.semester }}</p>
+    <p>Roll Number: {{ student.roll_number }}</p>
+    <p>Date of Birth: {{ student.date_of_birth }}</p>
+    <p>Address: {{ student.address }}</p>
+    <p>Contact Number: {{ student.contact_number }}</p>
+
+    <h2>Fee Details</h2>
+    <!-- Display fee details -->
+    <p>Year 1 Fee: {{ fee.year_1_fee }}</p>
+    <p>Year 2 Fee: {{ fee.year_2_fee }}</p>
+    <p>Year 3 Fee: {{ fee.year_3_fee }}</p>
+    <p>Year 4 Fee: {{ fee.year_4_fee }}</p>
+
+    <form action="{% url 'approve_student_profile' student.user.id %}" method="post">
+        {% csrf_token %}
+        <button type="submit" name="approve">Approve</button>
+    </form>
+
+    <form action="{% url 'approve_student_profile' student.user.id %}" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" name="reject">Reject</button>
+    </form>
+
+</div>
+{% endblock content %}

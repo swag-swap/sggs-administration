@@ -156,7 +156,7 @@
         const now = new Date();
         const expires = new Date(expirationTime);
         const timeUntilExpires = expires.getTime() - now.getTime();
-        document.cookie = `selected_options=${selectedOptions.join('|')};expires=${expires.toUTCString()};path=/student/session/{{session_id}}/test/{{test_id}};`;
+        document.cookie = `selected_options=${selectedOptions.join('|')};expires=${expires.toUTCString()};`;
     }
 
     function getSelectedOptions() {

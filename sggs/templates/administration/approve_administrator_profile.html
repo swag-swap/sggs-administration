@@ -1,0 +1,39 @@
+{% extends "base.html" %} 
+{% block content %}
+<div class="container">
+
+    <h1 class="mb-4">Administrator Profile</h1>
+    <div class="card">
+        <div class="card-body">
+            <h2 class="card-title">Details</h2>
+            <p><strong>Username:</strong> {{ administrator.user.username }}</p>
+            <!-- Add more teacher details as needed -->
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <h2 class="card-title">Departments</h2>
+            <ul class="list-group">
+                {% for department in administrator.departments.all %}
+                    <li class="list-group-item">{{ department.name }}</li>
+                {% empty %}
+                    <li class="list-group-item">No departments assigned</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div> 
+
+    <form action="{% url 'approve_administration_profile' administrator.user.id %}" method="post">
+        {% csrf_token %}
+        <button type="submit" name="approve">Approve</button>
+    </form>
+
+    <form action="{% url 'approve_administration_profile' administrator.user.id %}" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" name="reject">Reject</button>
+    </form>
+
+</div>
+{% endblock content %}

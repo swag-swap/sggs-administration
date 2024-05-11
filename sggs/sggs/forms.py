@@ -1,5 +1,8 @@
 from django import forms
-from administration.models import Student, Department, Semester, Fee, CustomUser, OTP, Teacher, Administrator, ClassSession, Subject
+from administration.models import *
+from teacher.models import *
+from student.models import *
+from library.models import *
 
 class RegistrationForm(forms.ModelForm):
     ROLE_CHOICES = [
@@ -33,8 +36,8 @@ class StudentForm(forms.ModelForm):
 
 
     class Meta:
-        model = Student
-        fields = ['department', 'semester', 'roll_number', 'date_of_birth', 'address', 'contact_number']
+        model = Student_edited
+        fields = ['department', 'semester','year', 'roll_number', 'date_of_birth', 'address', 'contact_number']
 
     def clean_username(self):
         username = self.cleaned_data['username']
@@ -48,12 +51,12 @@ class StudentForm(forms.ModelForm):
             field.widget.attrs.update({'class': 'form-control'})
         if self.instance:
             try:
-                fee = Fee.objects.get(student=self.instance)
+                fee = Fee_edited.objects.get(student_edited=self.instance)
                 self.fields['year_1_fee'].initial = fee.year_1_fee
                 self.fields['year_2_fee'].initial = fee.year_2_fee
                 self.fields['year_3_fee'].initial = fee.year_3_fee
                 self.fields['year_4_fee'].initial = fee.year_4_fee
-            except Fee.DoesNotExist:
+            except Fee_edited.DoesNotExist:
                 pass
 
     def save(self):
@@ -62,16 +65,16 @@ class StudentForm(forms.ModelForm):
         print('HI1') 
         try:
             print('try block')
-            fee = Fee.objects.get(student=student) 
+            fee = Fee_edited.objects.get(student_edited=student) 
             fee.year_1_fee = self.cleaned_data['year_1_fee']
             fee.year_2_fee = self.cleaned_data['year_2_fee']
             fee.year_3_fee = self.cleaned_data['year_3_fee']
             fee.year_4_fee = self.cleaned_data['year_4_fee']
             fee.save()
-        except Fee.DoesNotExist:
+        except Fee_edited.DoesNotExist:
             print('except block')
-            Fee.objects.create(
-                student=student,
+            Fee_edited.objects.create(
+                student_edited=student,
                 year_1_fee=self.cleaned_data['year_1_fee'],
                 year_2_fee=self.cleaned_data['year_2_fee'],
                 year_3_fee=self.cleaned_data['year_3_fee'],
@@ -92,9 +95,15 @@ class TeacherForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple()
     )
 
+    subjects = forms.ModelMultipleChoiceField(
+        label='Subjects', 
+        queryset=Subject.objects.all(),   
+        widget=forms.CheckboxSelectMultiple()
+    )
+
     class Meta:
-        model = Teacher
-        fields = ['departments']
+        model = Teacher_edited
+        fields = ['departments','subjects']
 
 
 # Administrators form
@@ -107,5 +116,12 @@ class AdministratorForm(forms.ModelForm):
     )
 
     class Meta:
-        model = Administrator
+        model = Administrator_edited
         fields = ['departments']
+
+# Librarian form
+
+class LibrarianForm(forms.ModelForm):
+    class Meta:
+        model = Librarian_edited
+        fields = []

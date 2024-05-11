@@ -16,20 +16,22 @@ This website is the administration website for the SGGS college management. Ther
 - Staff has its specific role of doing things.
 
 ## Todo
-- [+] models for all the adminstrations
-- [+] student registration 
-- [ ] student login
-- [ ] admin registration
-- [ ] admin login
-- [ ] student details filling page 
-- [ ] admin details filling page
-- [ ] profile making
-- [ ] Subject model, Test models, etc
-- [ ] question making for the admin(like staff, teacher, etc)
-- [ ] question taking steps (like for admin all stuffs)
-- [ ] attendence model
+- [ ] Registration
+- [+] Login 
+- [ ] profile editing
+- [+] models for the admin, teacher, student
+- [+] Subject model, Test models, attendence models
+- [+] question making for the admin(like staff, teacher, etc)
+- [+] question taking steps (like for admin all stuffs)
 - [ ] attendence page
-- [ ] Other things by Sir
+- [+] attendence showing
+- [ ] Test making page
+- [+] Test page
+- [ ] Result show for teacher and student
+- [+] Library models
+- [ ] Library Pages 
+
+
 
 ## Steps to create the project
 1) Creating the virtual environment.

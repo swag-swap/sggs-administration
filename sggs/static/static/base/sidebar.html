@@ -143,37 +143,6 @@
                 <span>Sessions</span></a>
         </li> 
 
-
-        <hr class="sidebar-divider">
-
-        <div class="sidebar-heading">
-            Test
-        </div>
-
-        <li class="nav-item">
-            <a class="nav-link" href="tables.html">
-                <i class="fas fa-fw fa-table"></i>
-                <span>Create Test</span></a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="tables.html">
-                <i class="fas fa-fw fa-table"></i>
-                <span>Edit Test</span></a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="tables.html">
-                <i class="fas fa-fw fa-table"></i>
-                <span>Result See</span></a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="tables.html">
-                <i class="fas fa-fw fa-table"></i>
-                <span>Test pdf</span></a>
-        </li>
-
         <hr class="sidebar-divider">
 
         <!-- Heading -->
@@ -192,7 +161,7 @@
     {% if is_student %}
     <div>
         <li class="nav-item active">
-            <a class="nav-link" href="index.html">
+            <a class="nav-link" href="{% url 'student_home' %}">
                 <i class="fas fa-fw fa-tachometer-alt"></i>
                 <span>Dashboard</span></a>
         </li> 
@@ -217,41 +186,17 @@
         </li> 
 
         <li class="nav-item">
-            <a class="nav-link" href="tables.html">
+            <a class="nav-link" href="{% url 'student_mark_attendence' %}">
                 <i class="fas fa-fw fa-table"></i>
                 <span>Give attendence</span></a>
-        </li> 
+        </li>  
 
         <li class="nav-item">
-            <a class="nav-link" href="tables.html">
+            <a class="nav-link" href="{% url 'student_sessions' %}">
                 <i class="fas fa-fw fa-table"></i>
-                <span>Attendence view</span></a>
+                <span>Sessions</span></a>
         </li> 
-
-
-        <hr class="sidebar-divider">
-
-        <div class="sidebar-heading">
-            Test
-        </div>
-
-        <li class="nav-item">
-            <a class="nav-link" href="tables.html">
-                <i class="fas fa-fw fa-table"></i>
-                <span>Give Test</span></a>
-        </li> 
-
-        <li class="nav-item">
-            <a class="nav-link" href="tables.html">
-                <i class="fas fa-fw fa-table"></i>
-                <span>Result See</span></a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="tables.html">
-                <i class="fas fa-fw fa-table"></i>
-                <span>Test pdf</span></a>
-        </li> 
+ 
     </div>
     {% endif %}
 

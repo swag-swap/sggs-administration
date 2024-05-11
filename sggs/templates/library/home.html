@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Banner Section -->
+<section class="banner">
+    <div class="container">
+        <h1>Welcome to Our Library</h1>
+        <!-- Add any other content for the banner section -->
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="statistics">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="statistic-box">
+                    <h2>{{ total_books }}</h2>
+                    <p>Total Books</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="statistic-box">
+                    <h2>{{ total_available_copies }}</h2>
+                    <p>Total Available Copies</p>
+                </div>
+            </div>
+            <!-- Add more statistic boxes as needed -->
+        </div>
+    </div>
+</section>
+
+<!-- Recent Arrivals Section -->
+<section class="recent-arrivals">
+    <div class="container">
+        <h2>Recent Arrivals</h2>
+        <div class="row">
+            {% for book in recent_arrivals %}
+            <div class="col-md-4">
+                <div class="card">
+                    <img src="{{ book.cover_image.url }}" class="card-img-top" alt="Book Cover">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ book.title }}</h5>
+                        <p class="card-text">{{ book.author }}</p>
+                        <a href="#" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}

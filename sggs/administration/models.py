@@ -11,10 +11,11 @@ import random, re, os
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
-    # -1 -> role is not chosen, 0 -> role chosen but not admitted by admin, 1 -> role fixed
+    # -1 -> role is not chosen, 0 -> role chosen but not admitted by admin, 1 -> role fixed, 2 -> role fixed but profile edited
     is_student = models.IntegerField(default=-1)
     is_teacher = models.IntegerField(default=-1)
     is_administrator = models.IntegerField(default=-1)
+    is_librarian = models.IntegerField(default=-1)
     profile_photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True)
 
     def save(self, *args, **kwargs):
@@ -189,6 +190,11 @@ class Administrator(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='administrator_profile')
     departments = models.ManyToManyField(Department, related_name='administrators', default=None) 
 
+class Administrator_edited(models.Model): 
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='administrator_edited_profile')
+    departments = models.ManyToManyField(Department, related_name='administrator_edited_department', default=None) 
+
+
 class Division(models.Model):
     name = models.CharField(max_length=20, unique=True)
 
@@ -204,6 +210,7 @@ class ClassSession(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     teacher = models.ManyToManyField(Teacher, related_name='session_teachers') 
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    students = models.ManyToManyField(Student, related_name='session_students')
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
     year = models.IntegerField()
     start_date = models.DateField()
@@ -216,6 +223,7 @@ class ClassSession(models.Model):
     response_table_name = models.CharField(max_length=255, blank = True)
     test_table_name = models.CharField(max_length=255, blank = True)
     test_questions_table_name = models.CharField(max_length=255, blank = True)
+
     
     def save(self, *args, **kwargs):
         department_name = self.department.name
@@ -444,35 +452,43 @@ def handle_class_session_post_delete(sender, instance, **kwargs):
     except Exception as e:
         print(f"Error dropping table {attendence_table_name}: {e}")
 
+
+from library.models import Librarian
+
 class Notification(models.Model):
     NOTIFICATION_TYPES = [
         (1, 'Teacher Profile Update'),
         (2, 'New Teacher Request'),
         (3, 'New Student Enrollment'),
-        (4, 'Fee Payment Reminder'),
-        (5, 'Class Session'),
+        (4, 'New Administrator Request'),
+        (5, 'New Librarian Request'),
         (6, 'Exam Schedule'),
         (7, 'Attendance'),
         (8, 'Assignment Submission'),
         (9, 'Grading'),
         (10, 'System Maintenance'), 
         (11, 'Student Profile Update'),
-        (12, 'New Administrator Request'),
-
-        # Add more notification types as needed
+        (12, 'Fee Payment Reminder'),
+        (13, 'Profile Approved'),
+        (14, 'Profile Rejected'),
+        (15, 'Class Session'),
+ 
     ]
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')
+    to_user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='to_user', default=None, null=True)
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    notification_type = models.IntegerField(choices=NOTIFICATION_TYPES)
+    notification_type = models.IntegerField(choices=NOTIFICATION_TYPES, default=None, null=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='student_notification', default=None, null=True)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='teacher_notification', default=None, null=True)
+    librarian = models.ForeignKey(Librarian, on_delete=models.CASCADE, related_name='librarian_notification', default=None, null=True)
     administrator = models.ForeignKey(Administrator, on_delete=models.CASCADE, related_name='administrator_notification', default=None, null=True)
     session = models.ForeignKey(ClassSession, on_delete=models.CASCADE, related_name='session_notification', default=None, null=True)
     for_student = models.BooleanField(default=False)
     for_administrator = models.BooleanField(default=False)
     for_teacher = models.BooleanField(default=False)
+    read = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.user.username} - {self.message}'

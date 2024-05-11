@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-jf@h)e0ym&2*kjln3*-rg5n2b#kv285e!u0es5np#d&a1)5#c-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'administration.apps.AdministrationConfig',
     'teacher.apps.TeacherConfig',
     'student.apps.StudentConfig',
+    'library.apps.LibraryConfig',
     # external
     'crispy_forms',
     'crispy_bootstrap5',

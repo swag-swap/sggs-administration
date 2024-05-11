@@ -78,13 +78,17 @@ class StudentForm(forms.ModelForm):
 class StudentSearchForm(forms.Form):
     reg_no = forms.CharField(label='Student Registration Number', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter registration number'}))
 
+class RejectionForm(forms.Form):
+    rejection_message = forms.CharField(label='Rejection Message', widget=forms.Textarea(attrs={'rows': 4, 'cols': 50}))
+
+
 
 # Teachers form 
     
 class TeacherForm(forms.ModelForm):
     class Meta:
         model = Teacher
-        fields = ['departments']
+        fields = ['departments', 'subjects']
 
 
 # Administrators form

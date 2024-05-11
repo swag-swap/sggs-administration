@@ -1,0 +1,67 @@
+{% extends "base.html" %} 
+{% block content %}
+<div class="container">
+    <h1>Notifications</h1>
+    <ul>
+        {% if student_profile_updates %}
+            <h2>Student Approval Notification</h2>
+            {% for notification in student_profile_updates %}
+            <li>
+                '{{ notification.user }}' wants to change the profile
+                {% if notification.notification_type == 3 %}
+                <form action="{% url 'approve_student_profile' user_id=notification.user.id  %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit">See the profile</button>
+                </form>
+                {% endif %}
+            </li>
+            {% endfor %}
+        {% endif %}
+
+        {% if teacher_profile_updates %}
+            <h2>Teacher Approval Notification</h2>
+            {% for notification in teacher_profile_updates %}
+            <li>
+                '{{ notification.user }}' wants to change the profile
+                {% if notification.notification_type == 2 %}
+                <form action="{% url 'approve_teacher_profile' user_id=notification.user.id  %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit">See the profile</button>
+                </form>
+                {% endif %}
+            </li>
+            {% endfor %}
+        {% endif %}
+
+        {% if administrator_profile_updates %}
+            <h2>administrator Approval Notification</h2>
+            {% for notification in administrator_profile_updates %}
+            <li>
+                '{{ notification.user }}' wants to change the profile
+                {% if notification.notification_type == 4 %}
+                <form action="{% url 'approve_administration_profile' user_id=notification.user.id  %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit">See the profile</button>
+                </form>
+                {% endif %}
+            </li>
+            {% endfor %}
+        {% endif %}
+
+        {% if librarian_profile_updates %}
+            <h2>librarian Approval Notification</h2>
+            {% for notification in librarian_profile_updates %}
+            <li>
+                '{{ notification.user }}' wants to change the profile
+                {% if notification.notification_type == 5 %}
+                <form action="{% url 'approve_librarian_profile' user_id=notification.user.id  %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit">See the profile</button>
+                </form>
+                {% endif %}
+            </li>
+            {% endfor %}
+        {% endif %}
+    </ul>
+</div>
+{% endblock content %}

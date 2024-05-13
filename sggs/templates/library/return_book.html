@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mt-5">Return Book</h1>
+    <form method="post" class="mt-3">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="username" class="form-label">Enter User username:</label>
+            <input type="text" name="username" id="username" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="isbn" class="form-label">Book ISBN:</label>
+            <input type="text" name="isbn" id="isbn" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Return Book</button>
+    </form>
+
+    {% if message %}
+    <h2 class="mt-4">{{message}} for user: {{user.username}} & book: {{book.isbn}}</h2> 
+    {% endif %}
+</div>
+{% endblock %}

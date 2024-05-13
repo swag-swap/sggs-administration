@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from .forms import StudentForm, RegistrationForm, LoginForm, TeacherForm, AdministratorForm, ClassSessionForm, SubjectForm, DepartmentForm, SessionFilterForm, StudentSearchForm
+from .forms import *
 from django.http import JsonResponse, QueryDict
 from administration.models import *
 from teacher.models import *
@@ -29,14 +29,29 @@ def home(request):
     else:
         return render(request, 'base/404.html')
 
+# Session
+
 @login_required
 def session_add(request):
-    if request.user.is_administrator == 1:
+    if request.user.is_administrator >= 1:
         if request.method == 'POST':
             form = ClassSessionForm(request.POST)
             if form.is_valid():
-                form.save()
-                return redirect('admin_session_list')  # Assuming you have a URL named 'session_list'
+                print(form)
+                new_session = form.save(commit=False)
+                
+                existing_sessions = ClassSession.objects.filter(
+                    department=new_session.department,
+                    subject=new_session.subject,
+                    semester=new_session.semester,
+                    year=new_session.year
+                )
+                if existing_sessions.exists():
+                    error_message = "A session with the same department, subject, semester, and year already exists."
+                    return render(request, 'administration/session_add.html', {'is_administration': True, 'user': request.user, 'form': form, 'error_message': error_message})
+                else: 
+                    new_session.save()
+                    return redirect('admin_session_list') 
         else:
             form = ClassSessionForm()
         return render(request, 'administration/session_add.html', {'is_administration': True, 'user': request.user,'form': form})
@@ -47,12 +62,13 @@ def session_edit(request, session_id):
     if request.user.is_administrator == 1:
         session = get_object_or_404(ClassSession, id=session_id)
         if request.method == 'POST':
-            form = ClassSessionForm(request.POST, instance=session)
+            form = EditClassSessionForm(request.POST, instance=session)
             if form.is_valid():
+                print(form)
                 form.save()
-                return redirect('admin_session_list')  # Redirect to session list page
+                return redirect('admin_session_list')  
         else:
-            form = ClassSessionForm(instance=session)
+            form = EditClassSessionForm(instance=session)
         return render(request, 'administration/session_edit.html', {'is_administration': True, 'user': request.user,'session':session,'form': form})
     else:
         return render(request, 'base/404.html')
@@ -62,7 +78,7 @@ def session_delete(request, session_id):
         session = get_object_or_404(ClassSession, id=session_id)
         if request.method == 'POST':
             session.delete()
-            return redirect('admin_session_list')  # Redirect to session list page
+            return redirect('admin_session_list')
         return render(request, 'administration/session_delete.html', {'is_administration': True, 'user': request.user,'session': session})
     else:
         return render(request, 'base/404.html')
@@ -87,13 +103,16 @@ def session_list(request):
     else:
         return render(request, 'base/404.html')
 
+
+# Subject
+
 def subject_add(request):
     if request.user.is_administrator == 1:
         if request.method == 'POST':
             form = SubjectForm(request.POST)
             if form.is_valid():
                 form.save()
-                return redirect('admin_subject_list')  # Redirect to session list page after adding subject
+                return redirect('admin_subject_list') 
         else:
             form = SubjectForm()
         return render(request, 'administration/subject_add.html', {'is_administration': True, 'user': request.user,'form': form})
@@ -107,7 +126,7 @@ def subject_edit(request, subject_id):
             form = SubjectForm(request.POST, instance=subject)
             if form.is_valid():
                 form.save()
-                return redirect('admin_subject_list')  # Redirect to subject list page
+                return redirect('admin_subject_list')  
         else:
             form = SubjectForm(instance=subject)
         return render(request, 'administration/subject_edit.html', {'is_administration': True, 'user': request.user,'form': form})
@@ -119,7 +138,7 @@ def subject_delete(request, subject_id):
         subject = get_object_or_404(Subject, pk=subject_id)
         if request.method == 'POST':
             subject.delete()
-            return redirect('admin_subject_list')  # Redirect to subject list page
+            return redirect('admin_subject_list') 
         return render(request, 'administration/subject_delete.html', {'is_administration': True, 'user': request.user,'subject': subject})
     else:
         return render(request, 'base/404.html')
@@ -131,6 +150,7 @@ def subject_list(request):
     else:
         return render(request, 'base/404.html')
 
+# Department
 
 def department_add(request):
     if request.user.is_administrator == 1:
@@ -164,7 +184,7 @@ def department_delete(request, department_id):
         department = get_object_or_404(Department, pk=department_id)
         if request.method == 'POST':
             department.delete()
-            return redirect('admin_department_list')  # Redirect to department list page
+            return redirect('admin_department_list')  
         return render(request, 'administration/department_delete.html', {'is_administration': True, 'user': request.user,'department': department})
     else:
         return render(request, 'base/404.html')
@@ -178,48 +198,11 @@ def department_list(request):
 
 
 
-# @login_required
+# Teacher
+
+@login_required
 def add_teacher(request):
-    # if not request.user.is_administrator == 1:
-    #     return render(request, 'base/404.html')  
-    
-    # administrator = Administrator.objects.get(user = request.user) 
-    # if request.method == 'POST':
-    #     excel_file = request.FILES['excel_file']
-    #     attendance_date = request.POST['attendance_date'] 
-    #     df = pd.read_excel(excel_file) 
-    #     cursor = connection.cursor()
-
-    #     for index, row in df.iterrows():
-    #         email = row['Email']
-    #         first_name = row['First name']
-    #         middle_name = row['Middle name']
-    #         surname = row['Surname']
-    #         departments = row['Departments'].split(', ')
-    #         subjects = row['Subjects'].split(', ')
-    #     user, created = CustomUser.objects.get_or_create( email=email )
-    #     if not created:
-    #         user.first_name = first_name
-    #         user.last_name = surname
-    #         user.password = first_name+surname
-    #         user.save()
-
-    #     teacher, teacher_created = Teacher.objects.get_or_create(user=user)
-    #     teacher.departments.clear()
-    #     teacher.subjects.clear()
-    #     for dept_name in departments:
-    #         department, _ = Department.objects.get_or_create(name=dept_name)
-    #         teacher.departments.add(department)
-    #     for subject_name in subjects:
-    #         subject, _ = Subject.objects.get_or_create(name=subject_name)
-    #         teacher.subjects.add(subject)
-    #     teacher.save()
-
-    #     return JsonResponse({'message': 'Teachers added'})
-    
     return render(request, 'teacher/teacher_detail.html', {'is_teacher':True, 'user':request.user})
-    
-
 
 @login_required
 def manage_teacher(request):
@@ -253,18 +236,262 @@ def teacher_details(request, teacher_id):
     teacher = get_object_or_404(Teacher, pk=teacher_id)
     administrator = Administrator.objects.get(user = request.user) 
     departments = administrator.departments.all()
-    sessions = ClassSession.objects.filter(department__in=departments, active=True)
+    sessions = ClassSession.objects.filter(teacher=teacher, active=True)
     return render(request, 'administration/teacher_detail.html', {'is_administration': True, 'user': request.user,'teacher': teacher, 'sessions': sessions})
 
-def add_teacher(request):
+def add_teacher_from_excel(request):
+    if request.method == 'POST' and request.FILES.get('excel_file'):
+        excel_file = request.FILES['excel_file'] 
+        try:
+            excel_data = parse_excel(excel_file)
+        except Exception as e: 
+            errors = ['Error processing Excel file'] 
+            messages.error(request, f"Error processing Excel file: {e}")
+            return render(request, 'administration/teacher_add.html', {'errors': errors, 'is_administration': True, 'user': request.user})
+        
+        added_users = []
+        updated_users = []
+        added_teachers = []
+        updated_teachers = []
+        errors = []
+
+        for row in excel_data: 
+            email = row.get('Email', '').strip().lower()
+            if not email:
+                errors.append("Email is missing in one or more rows.")
+                continue
+
+            first_name = row.get('First_name', '').strip().upper()
+            middle_name = row.get('Middle_name', '').strip().upper()
+            surname = row.get('Last_name', '').strip().upper()
+            departments = [department.strip() for department in row.get('Departments', '').split(',')]
+            subjects = [subject.strip() for subject in row.get('Subjects', '').split(',')] 
+            username = email.split('@')[0]
+
+            try: 
+                user, created = CustomUser.objects.get_or_create(email=email, defaults={
+                    'username': username,
+                    'first_name': first_name,
+                    'last_name': surname,
+                    'password': email,
+                })
+
+                if not created:
+                    user.first_name = first_name
+                    user.last_name = surname
+                    user.username = username
+                    user.save()
+                    updated_users.append(user)
+                else:
+                    added_users.append(user)
+                
+                try:
+                    teacher, created = Teacher.objects.get_or_create(user=user)
+                    if not created:
+                        teacher.departments.clear()
+                        teacher.subjects.clear()
+                        updated_teachers.append(teacher)
+                    else:
+                        added_teachers.append(teacher)
+
+                    for department_name in departments:
+                        department = Department.objects.filter(name__iexact=department_name).first()
+                        if department:
+                            teacher.departments.add(department)
+                        else:
+                            errors.append(f"Department '{department_name}' not found for email : {email}.")
+                    
+                    for subject_name in subjects:
+                        subject = Subject.objects.filter(name__iexact=subject_name).first()
+                        if subject:
+                            teacher.subjects.add(subject)
+                        else:
+                            errors.append(f"Subject '{subject_name}' not found for email : {email}.")
+                        
+                    user.is_teacher = 1
+                    user.save()
+                    teacher.save()
+                
+                except Exception as e:
+                    errors.append(f"Error processing teacher for user with email {email}: {e}")
+
+            except Exception as e: 
+                errors.append(f"Error processing user with email {email}: {e}")
+
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+
+        context = {
+            'added_users': added_users,
+            'updated_users': updated_users,
+            'added_teachers': added_teachers,
+            'updated_teachers': updated_teachers,
+            'errors': errors,
+        }
+        return render(request, 'administration/teacher_add.html', {'context': context, 'is_administration': True, 'user': request.user})
+
+    return render(request, 'administration/teacher_add.html', {'is_administration': True, 'user': request.user})
+
+def parse_excel(excel_file):
+    try: 
+        df = pd.read_excel(excel_file) 
+        data = df.to_dict(orient='records')
+        return data
+    except Exception as e: 
+        raise Exception(f"Error parsing Excel file: {str(e)}")
+
+
+# Student
+
+def add_student(request):
     return 0
 
+def add_student_from_excel(request):
+    if request.method == 'POST' and request.FILES.get('excel_file'):
+        excel_file = request.FILES['excel_file']
+        try:
+            excel_data = parse_excel(excel_file)
+        except Exception as e:
+            errors = ['Error processing Excel file']
+            messages.error(request, f"Error processing Excel file: {e}")
+            return render(request, 'administration/student_add_from_excel.html', {'errors': errors, 'is_administration': True, 'user': request.user})
 
+        added_users = []
+        updated_users = []
+        added_students = []
+        updated_students = []
+        added_fees = []
+        updated_fees = []
+        errors = []
+
+        for row in excel_data:
+            email = row.get('Email', '').strip().lower()
+            if not email:
+                errors.append("Email is missing in one or more rows.")
+                continue
+
+            first_name = row.get('First_name', '').strip().upper()
+            middle_name = row.get('Middle_name', '').strip().upper()
+            surname = row.get('Last_name', '').strip().upper()
+            department_name = row.get('Department', '').strip()
+            semester_name = row.get('Semester', '')
+            year = int(row.get('Year', 2000))
+            roll_number = row.get('Roll_number', '').strip()
+            date_of_birth = row.get('Date_of_birth', '2000-01-01')
+            address = row.get('Address', '').strip()
+            contact_number = row.get('Contact_number', '')
+            username = email.split('@')[0]
+            year_1_fee = row.get('Year_1_Fee','')
+            year_2_fee = row.get('Year_2_Fee','')
+            year_3_fee = row.get('Year_3_Fee','')
+            year_4_fee = row.get('Year_4_Fee','')
+
+            department = Department.objects.filter(name__iexact=department_name).first()
+            semester = Semester.objects.filter(name__iexact=semester_name).first()
+
+            if not department:
+                errors.append(f"Department '{department_name}' not found for email: {email}.")
+                continue
+
+            if not semester:
+                errors.append(f"Semester '{semester_name}' not found for email: {email}.")
+                continue
+
+            try:
+                user, created = CustomUser.objects.get_or_create(email=email, defaults={
+                    'username': username,
+                    'first_name': first_name,
+                    'last_name': surname,
+                    'password': email,
+                })
+
+                if not created:
+                    user.first_name = first_name
+                    user.last_name = surname
+                    user.username = username
+                    user.save()
+                    updated_users.append(user)
+                else:
+                    added_users.append(user)
+
+                try:
+                    student, created = Student.objects.get_or_create(user=user, defaults={
+                        'reg_no': user.username.upper(),
+                        'department': Department.objects.filter(name__iexact=department).first(),
+                        'semester': Semester.objects.filter(name__iexact=semester).first(),
+                        'year': year,
+                        'roll_number': roll_number,
+                        'date_of_birth': date_of_birth,
+                        'address': address,
+                        'contact_number': contact_number,
+                    })
+
+                    if not created:
+                        student.reg_no = user.username.upper()
+                        student.department = department
+                        student.semester = semester
+                        student.year = year
+                        student.roll_number = roll_number
+                        student.date_of_birth = date_of_birth
+                        student.address = address
+                        student.contact_number = contact_number
+                        student.save()
+                        updated_students.append(student)
+                    else:
+                        added_students.append(student)
+                    user.is_student = 1
+                    user.save()
+                    try:
+                        fee, fee_created = Fee.objects.get_or_create(student=student, defaults={
+                            'year_1_fee': year_1_fee,
+                            'year_2_fee': year_2_fee,
+                            'year_3_fee': year_3_fee,
+                            'year_4_fee': year_4_fee,
+                        })
+
+                        if not fee_created:
+                            fee.year_1_fee = year_1_fee
+                            fee.year_2_fee = year_2_fee
+                            fee.year_3_fee = year_3_fee
+                            fee.year_4_fee = year_4_fee
+                            updated_fees.append(fee)
+                        else:
+                            added_fees.append(fee)
+
+                    except Exception as e:
+                        errors.append(f"Error processing fee for student with email {email}: {e}")
+
+                except Exception as e:
+                    errors.append(f"Error processing student for user with email {email}: {e}")
+
+            except Exception as e:
+                errors.append(f"Error processing user with email {email}: {e}")
+
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+
+        context = {
+            'added_users': added_users,
+            'updated_users': updated_users,
+            'added_students': added_students,
+            'updated_students': updated_students,
+            'added_fees': added_fees,
+            'updated_fees': updated_fees,
+            'errors': errors,
+        }
+        return render(request, 'administration/student_add_from_excel.html', {'context': context, 'is_administration': True, 'user': request.user})
+
+    return render(request, 'administration/student_add_from_excel.html', {'is_administration': True, 'user': request.user})
+
+    
 def calculate_attendance_percentage(session_id):
-    session = ClassSession.objects.get(id=session_id)
+    session = get_object_or_404(ClassSession, id=session_id)
     attendance_table_name = session.attendence_table_name 
-        # Query all students belonging to the specified year and semester
-    students = Student.objects.filter(semester=session.semester, year = session.year)
+    
+    students = session.students.all()
+    print(students)
 
     cursor = connection.cursor()
     cursor.execute(f"SELECT student_id, COUNT(*) as total_attendances FROM {attendance_table_name} WHERE is_present = True GROUP BY student_id")
@@ -301,7 +528,7 @@ def manage_student(request):
 
 def get_student_attendance(student_id):
     student = Student.objects.get(pk=student_id)
-    sessions = ClassSession.objects.filter(year=student.year, semester=student.semester)
+    sessions = ClassSession.objects.filter(students = student)
     
     attendance_data = {}
 
@@ -334,8 +561,94 @@ def manage_student_detail(request, id):
         'attendance_data': attendance_data
     })
 
-def add_student(request):
-    return 0
+
+# Administration
+
+
+def add_admin_from_excel(request):
+    if request.method == 'POST' and request.FILES.get('excel_file'):
+        excel_file = request.FILES['excel_file'] 
+        try:
+            excel_data = parse_excel(excel_file)
+        except Exception as e: 
+            errors = ['Error processing Excel file'] 
+            messages.error(request, f"Error processing Excel file: {e}")
+            return render(request, 'administration/admin_add_from_excel.html', {'errors': errors, 'is_administration': True, 'user': request.user})
+        
+        added_users = []
+        updated_users = []
+        added_admins = []
+        updated_admins = []
+        errors = []
+
+        for row in excel_data: 
+            email = row.get('Email', '').strip().lower()
+            if not email:
+                errors.append("Email is missing in one or more rows.")
+                continue
+
+            first_name = row.get('First_name', '').strip().upper()
+            middle_name = row.get('Middle_name', '').strip().upper()
+            surname = row.get('Last_name', '').strip().upper()
+            departments = [department.strip() for department in row.get('Departments', '').split(',')] 
+            username = email.split('@')[0]
+
+            try: 
+                user, created = CustomUser.objects.get_or_create(email=email, defaults={
+                    'username': username,
+                    'first_name': first_name,
+                    'last_name': surname,
+                    'password': email,
+                })
+
+                if not created:
+                    user.first_name = first_name
+                    user.last_name = surname
+                    user.username = username
+                    user.save()
+                    updated_users.append(user)
+                else:
+                    added_users.append(user)
+                
+                try:
+                    administrator, created = Administrator.objects.get_or_create(user=user)
+                    if not created:
+                        administrator.departments.clear() 
+                        updated_admins.append(administrator)
+                    else:
+                        added_admins.append(administrator)
+
+                    for department_name in departments:
+                        department = Department.objects.filter(name__iexact=department_name).first()
+                        if department:
+                            administrator.departments.add(department)
+                        else:
+                            errors.append(f"Department '{department_name}' not found for email : {email}.")
+                    
+                    user.is_administrator = 1
+                    user.save()
+                    administrator.save()
+                
+                except Exception as e:
+                    errors.append(f"Error processing Administrator for user with email {email}: {e}")
+
+            except Exception as e: 
+                errors.append(f"Error processing user with email {email}: {e}")
+
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+
+        context = {
+            'added_users': added_users,
+            'updated_users': updated_users,
+            'added_admins': added_admins,
+            'updated_admins': updated_admins,
+            'errors': errors,
+        }
+        return render(request, 'administration/admin_add_from_excel.html', {'context': context, 'is_administration': True, 'user': request.user})
+
+    return render(request, 'administration/admin_add_from_excel.html', {'is_administration': True, 'user': request.user})
 
 
 #Notifications
@@ -469,7 +782,6 @@ def approve_student_profile(request, user_id):
         'user': request.user,
         'form': form
     })
-
 
 def approve_teacher_profile(request, user_id):
 
@@ -614,8 +926,6 @@ def approve_administration_profile(request, user_id):
         'user': request.user,
         'form': form
     })
-
-
 
 def approve_librarian_profile(request, user_id):
 

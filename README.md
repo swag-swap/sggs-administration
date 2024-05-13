@@ -16,9 +16,9 @@ This website is the administration website for the SGGS college management. Ther
 - Staff has its specific role of doing things.
 
 ## Todo
-- [ ] Registration
+- [+] Registration
 - [+] Login 
-- [ ] profile editing
+- [+] profile editing
 - [+] models for the admin, teacher, student
 - [+] Subject model, Test models, attendence models
 - [+] question making for the admin(like staff, teacher, etc)
@@ -29,7 +29,7 @@ This website is the administration website for the SGGS college management. Ther
 - [+] Test page
 - [ ] Result show for teacher and student
 - [+] Library models
-- [ ] Library Pages 
+- [+] Library Pages 
 
 
 

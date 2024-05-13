@@ -14,10 +14,11 @@ class Book(models.Model):
     department = models.ForeignKey(Department, on_delete=models.CASCADE,default=None, null=True)
     edition = models.CharField(max_length=50, default=None, null=True)
     publication_date = models.DateField(default=None, null=True)
-    isbn = models.CharField(max_length=13, default=None, null=True)
+    isbn = models.CharField(max_length=13, unique=True, default=None, null=True)
     available_copies = models.IntegerField(default=1)
     total_copies = models.IntegerField(default = 1)
     cover_image = models.ImageField(upload_to='book_covers/', null=True, blank=True)
+    fine_rate = models.IntegerField(default = 1, null=True)
 
     def __str__(self):
         return self.title
@@ -31,8 +32,8 @@ def delete_book_cover_image(sender, instance, **kwargs):
 class Borrower(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     borrower = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    borrowed_date = models.DateField(auto_now_add=True)
-    return_date = models.DateField(default=None, null=True)
+    borrowed_date = models.DateTimeField(auto_now_add=True)
+    return_date = models.DateTimeField(default=None, null=True)
 
     def __str__(self):
         return f"{self.book.title} - {self.borrower.username}"

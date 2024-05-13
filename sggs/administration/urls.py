@@ -19,6 +19,7 @@ urlpatterns = [
     path('manage/student/', manage_student, name='admin_student_manage'),
     path('manage/student/<int:id>/', manage_student_detail, name='admin_student_manage_detail'),
     path('student/add/', add_student, name='admin_student_add'),
+    path('student/add/excel/', add_student_from_excel, name='admin_student_add_excel'),
     path('approve_student_profile/<int:user_id>/', approve_student_profile, name='approve_student_profile'),
 
 
@@ -37,11 +38,13 @@ urlpatterns = [
 
     path('manage/teacher/', manage_teacher, name='admin_manage_teacher'),
     path('detail/teacher/<int:teacher_id>/', teacher_details, name='admin_teacher_detail'),
+    path('teacher/add/excel/', add_teacher_from_excel, name='admin_teacher_add_excel'),
     path('teacher/add/', add_teacher, name='admin_teacher_add'),
     path('approve_teacher_profile/<int:user_id>/', approve_teacher_profile, name='approve_teacher_profile'),
 
 
     path('approve_administration_profile/<int:user_id>/', approve_administration_profile, name='approve_administration_profile'),
+    path('admin/add/excel/', add_admin_from_excel, name='admin_admin_add_excel'),
 
     path('approve_librarian_profile/<int:user_id>/', approve_librarian_profile, name='approve_librarian_profile'),
 

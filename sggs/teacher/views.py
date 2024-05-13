@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import TeacherDetailsForm, AttendanceExtractionForm, QuestionForm, TestCreationForm
 from administration.models import Student, Teacher, Notification, ClassSession, Subject, UploadedImage
+from administration.views import calculate_attendance_percentage
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
@@ -14,7 +15,7 @@ from django.core.files.base import ContentFile
 
 
 @login_required
-def  teacher_home(request): 
+def teacher_home(request): 
     if request.user.is_teacher == -1:
         render(request, 'base/404.html')
     teacher = Teacher.objects.get(user=request.user) 
@@ -49,6 +50,8 @@ def edit_profile(request):
     else:
         form = TeacherDetailsForm(instance=teacher)
     return render(request, 'teacher/edit_profile.html', {'is_teacher':True, 'user':request.user,'form': form}) 
+
+# Attendence
 
 @login_required
 def start_attendence(request, session_id):
@@ -116,13 +119,8 @@ def take_attendance(request, session_id):
     
     return render(request, 'teacher/attendance_take.html', {'is_teacher':True, 'user':request.user,'session': session})
 
-@login_required
-def teacher_sessions(request):
-    if request.user.is_teacher == -1:
-        render(request, 'base/404.html')
-    teacher = Teacher.objects.get(user=request.user) 
-    sessions = teacher.session_teachers.all()
-    return render(request, 'teacher/sessions.html', {'is_teacher':True, 'user':request.user,'sessions': sessions})
+
+# Subject
 
 @login_required
 def subject_list(request):
@@ -232,6 +230,25 @@ def subject_questions(request, subject_id):
 
     return render(request, 'teacher/subject_questions.html', {'is_teacher':True, 'user':request.user,'rows': rows, 'subject':subject})
 
+
+# Sessions
+
+@login_required
+def teacher_sessions(request):
+    if request.user.is_teacher == -1:
+        render(request, 'base/404.html')
+    teacher = Teacher.objects.get(user=request.user) 
+    sessions = teacher.session_teachers.all()
+    return render(request, 'teacher/sessions.html', {'is_teacher':True, 'user':request.user,'sessions': sessions})
+
+def session_attendance(request, session_id):
+    if request.user.is_teacher < 1:
+        render(request, 'base/404.html')
+    session = ClassSession.objects.get(pk=session_id)
+    attendance_percentage = calculate_attendance_percentage(session_id)
+    return render(request, 'administration/session_attendence.html', {'is_teacher':True, 'user': request.user,'session': session, 'attendance_percentage': attendance_percentage})
+
+# Tests
 
 @login_required
 def session_tests(request, session_id):

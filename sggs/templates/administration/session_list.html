@@ -20,7 +20,7 @@
                 <h5 class="mb-1">{{ session.department.name }}</h5>
                 <p class="mb-1">{{ session.subject.name }} - Year: {{ session.year }}</p>
             </div>
-            <div>
+            <div> 
                 <a href="{% url 'admin_edit_session' session.id %}" class="btn btn-primary mr-2">Edit</a>
                 <a href="{% url 'session_attendance' session.id %}" class="btn btn-primary">View Attendance</a>
             </div>

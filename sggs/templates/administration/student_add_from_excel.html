@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Add Students from Excel</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="excel_file" class="form-label">Select Excel File:</label>
+            <input type="file" name="excel_file" id="excel_file" class="form-control" accept=".xls,.xlsx">
+        </div>
+        <button type="submit" class="btn btn-primary">Upload</button>
+        <a href="{% static 'samples/Add_students.xlsx' %}" download class="btn btn-secondary">Download Sample File</a>
+    </form>
+    <!-- Display any errors -->
+    {% if context.errors %}
+        <h2 class="mt-5">Errors:</h2>
+        <ul>
+            {% for error in context.errors %}
+                <a  class="btn btn-warning btn-icon-split">
+                    <span class="icon text-white">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </span>
+                    <span class="text">{{ error }}</span>
+                </a> 
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% if context.added_students %}
+        <h2 class="mt-5">Added Students:</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Registration Number</th>
+                    <th>Department</th>
+                    <th>Semester</th>
+                    <th>Year</th>
+                    <th>Roll Number</th>
+                    <th>Date of Birth</th>
+                    <th>Address</th>
+                    <th>Contact Number</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in context.added_students %}
+                    <tr>
+                        <td>{{ student.user.email }}</td>
+                        <td>{{ student.reg_no }}</td>
+                        <td>{{ student.department }}</td>
+                        <td>{{ student.semester }}</td>
+                        <td>{{ student.year }}</td>
+                        <td>{{ student.roll_number }}</td>
+                        <td>{{ student.date_of_birth }}</td>
+                        <td>{{ student.address }}</td>
+                        <td>{{ student.contact_number }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+    {% if context.updated_students %}
+        <h2>Updated Students:</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Registration Number</th>
+                    <th>Department</th>
+                    <th>Semester</th>
+                    <th>Year</th>
+                    <th>Roll Number</th>
+                    <th>Date of Birth</th>
+                    <th>Address</th>
+                    <th>Contact Number</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in context.updated_students %}
+                    <tr>
+                        <td>{{ student.user.email }}</td>
+                        <td>{{ student.reg_no }}</td>
+                        <td>{{ student.department }}</td>
+                        <td>{{ student.semester }}</td>
+                        <td>{{ student.year }}</td>
+                        <td>{{ student.roll_number }}</td>
+                        <td>{{ student.date_of_birth }}</td>
+                        <td>{{ student.address }}</td>
+                        <td>{{ student.contact_number }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+    {% if context.added_fees %}
+        <h2>Added Fees:</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Year 1 Fee</th>
+                    <th>Year 2 Fee</th>
+                    <th>Year 3 Fee</th>
+                    <th>Year 4 Fee</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fee in context.added_fees %}
+                    <tr>
+                        <td>{{ fee.student.user.email }}</td>
+                        <td>{{ fee.year_1_fee }}</td>
+                        <td>{{ fee.year_2_fee }}</td>
+                        <td>{{ fee.year_3_fee }}</td>
+                        <td>{{ fee.year_4_fee }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+    {% if context.updated_fees %}
+        <h2>Updated Fees:</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Year 1 Fee</th>
+                    <th>Year 2 Fee</th>
+                    <th>Year 3 Fee</th>
+                    <th>Year 4 Fee</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fee in context.updated_fees %}
+                    <tr>
+                        <td>{{ fee.student.user.email }}</td>
+                        <td>{{ fee.year_1_fee }}</td>
+                        <td>{{ fee.year_2_fee }}</td>
+                        <td>{{ fee.year_3_fee }}</td>
+                        <td>{{ fee.year_4_fee }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table> 
+    {% endif %}
+</div>
+{% endblock %}

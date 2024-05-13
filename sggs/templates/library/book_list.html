@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+
+<div class="container">
+    <h1>Book List</h1>
+
+    <!-- Search form -->
+    <form class="mb-4">
+        <div class="form-row align-items-end">
+            <div class="col-md-3">
+                <input type="text" class="form-control" placeholder="Title" name="title">
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" placeholder="Author" name="author">
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" placeholder="Department" name="department">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Book list -->
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Sr.no.</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Department</th>
+                <th>edition</th>
+                <th>publication_date</th>
+                <th>isbn</th>
+                <th>Available Copies</th>
+                <th>Total Copies</th> 
+                <th>Fine Rate</th>
+                <th>Delete </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for book in books %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.author }}</td>
+                    <td>{{ book.department.name }}</td>
+                    <td>{{ book.edition }}</td>
+                    <td>{{ book.publication_date }}</td>
+                    <td>{{ book.isbn }}</td>
+                    <td>{{ book.available_copies }}</td>
+                    <td>{{ book.total_copies }}</td>
+                    <td>{{ book.fine_rate }}</td> 
+                    <td><a href="{% url 'library_book_delete' book_id=book.id%}" class="btn btn-danger btn-sm">Delete</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination links -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if books.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1" aria-label="First">
+                        <span aria-hidden="true">&laquo; First</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ books.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&lsaquo; Previous</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-hidden="true">&laquo; First</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link" aria-hidden="true">&lsaquo; Previous</span>
+                </li>
+            {% endif %}
+
+            <li class="page-item disabled">
+                <span class="page-link">
+                    Page {{ books.number }} of {{ books.paginator.num_pages }}.
+                </span>
+            </li>
+
+            {% if books.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ books.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true">Next &rsaquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ books.paginator.num_pages }}" aria-label="Last">
+                        <span aria-hidden="true">Last &raquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-hidden="true">Next &rsaquo;</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link" aria-hidden="true">Last &raquo;</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+{% endblock %}

@@ -98,10 +98,15 @@ class AdministratorForm(forms.ModelForm):
         model = Administrator
         fields = ['departments']
 
-class ClassSessionForm(forms.ModelForm):
+class ClassSessionForm(forms.ModelForm): 
+    teacher = forms.ModelMultipleChoiceField(
+        label='Teacher', 
+        queryset=Teacher.objects.all(),   
+        widget=forms.CheckboxSelectMultiple()
+    )
     class Meta:
         model = ClassSession
-        fields = ['department', 'semester', 'subject', 'teacher', 'year', 'start_date', 'end_date']
+        fields = ['department', 'teacher', 'semester', 'subject',  'year', 'start_date', 'end_date']
         widgets = {
             'start_date': forms.DateInput(attrs={'type': 'date'}),
             'end_date': forms.DateInput(attrs={'type': 'date'}),
@@ -109,18 +114,36 @@ class ClassSessionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['subject'].label = 'Subject'
-        self.fields['teacher'].label = 'Teacher'
-        self.fields['semester'].label = 'Semester' 
-        self.fields['department'].label = 'Department'
-        
-        for field_name, field in self.fields.items():
-            field.widget.attrs.update({'class': 'form-control'})
+         
             
-        self.fields['subject'].widget.attrs.update({'placeholder': 'Enter subject'})
-        self.fields['teacher'].widget.attrs.update({'placeholder': 'Enter teacher'})
-        self.fields['semester'].widget.attrs.update({'placeholder': 'Enter semester'})
-        self.fields['department'].widget.attrs.update({'placeholder': 'Enter department'})
+        self.fields['subject'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter subject'}) 
+        self.fields['semester'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter semester'})
+        self.fields['department'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter department'})
+        self.fields['start_date'].widget.attrs.update({'class': 'form-control'}) 
+        self.fields['end_date'].widget.attrs.update({'class': 'form-control'})  
+        self.fields['year'].widget.attrs.update({'class': 'form-control'}) 
+ 
+
+class EditClassSessionForm(forms.ModelForm): 
+    teacher = forms.ModelMultipleChoiceField(
+        label='Teacher', 
+        queryset=Teacher.objects.all(),   
+        widget=forms.CheckboxSelectMultiple()
+    )
+    class Meta:
+        model = ClassSession
+        fields = ['teacher', 'start_date', 'end_date']
+        widgets = {
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'type': 'date'}),
+        }
+     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs) 
+        
+        self.fields['start_date'].widget.attrs.update({'class': 'form-control'}) 
+        self.fields['end_date'].widget.attrs.update({'class': 'form-control'})   
+
 
 
 class SessionFilterForm(forms.Form):

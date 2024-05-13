@@ -18,8 +18,9 @@ def home(request):
     student_department = request.user.student_profile.department
     student_year = request.user.student_profile.year
     student_id = request.user.student_profile.id
+    student = Student.objects.get(id=student_id)
      
-    class_sessions = ClassSession.objects.filter(department=student_department, year=student_year, active=True)
+    class_sessions = ClassSession.objects.filter(students=student)
     # Attendance of all the sessions
     attendance_data = {}
     for session in class_sessions:
@@ -59,9 +60,11 @@ def sessions(request):
         return render(request, 'base/404.html')
     student_department = request.user.student_profile.department
     student_year = request.user.student_profile.year
+    student_id = request.user.student_profile.id
+    student = Student.objects.get(id=student_id)
     
     # Retrieve active sessions related to the student's department and year
-    sessions = ClassSession.objects.filter(department=student_department, year=student_year, active=True)
+    sessions = ClassSession.objects.filter(students=student)
     
     context = {
         'sessions': sessions,
@@ -79,8 +82,9 @@ def session_detail(request, session_id):
     student_department = request.user.student_profile.department
     student_year = request.user.student_profile.year
     student_id = request.user.student_profile.id
-
-    if student_department != session.department or student_year != session.year:
+    student_profile = request.user.student_profile
+ 
+    if not student_profile in session.students.all():
         return render(request, 'base/404.html')
     
     # Attendence
@@ -141,9 +145,11 @@ def test_detail(request, session_id, test_id):
     student_department = request.user.student_profile.department
     student_year = request.user.student_profile.year
     student_id = request.user.student_profile.id
-
-    if student_department != session.department or student_year != session.year:
+    student_profile = request.user.student_profile
+ 
+    if not student_profile in session.students.all():
         return render(request, 'base/404.html')
+ 
      
     query = f"""
         SELECT *
@@ -216,6 +222,10 @@ def give_test(request, session_id, test_id):
     student_department = request.user.student_profile.department
     student_year = request.user.student_profile.year
     student_id = request.user.student_profile.id
+    student_profile = request.user.student_profile
+ 
+    if not student_profile in session.students.all():
+        return render(request, 'base/404.html')
 
     with connection.cursor() as cursor:
         cursor.execute(f"SELECT COUNT(*) FROM {session.result_table_name} WHERE test_id = {test_id} AND student_id = {student_id}")
@@ -288,6 +298,10 @@ def submit_test_response(request, session_id, test_id):
     student_department = request.user.student_profile.department
     student_year = request.user.student_profile.year
     student_id = request.user.student_profile.id
+    student_profile = request.user.student_profile
+ 
+    if not student_profile in session.students.all():
+        return render(request, 'base/404.html')
 
     with connection.cursor() as cursor:
         cursor.execute(f"SELECT COUNT(*) FROM {session.result_table_name} WHERE test_id = {test_id} AND student_id = {student_id}")
@@ -330,6 +344,10 @@ def test_result(request, session_id, test_id):
     student_department = request.user.student_profile.department
     student_year = request.user.student_profile.year
     student_id = request.user.student_profile.id
+    student_profile = request.user.student_profile
+ 
+    if not student_profile in session.students.all():
+        return render(request, 'base/404.html')
 
 
     # Retrieve the test details

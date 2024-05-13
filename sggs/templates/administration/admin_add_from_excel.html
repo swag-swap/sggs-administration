@@ -2,7 +2,7 @@
 {% load static %}
 {% block content %}
 <div class="container mt-5">
-    <h1 class="mb-4">Add Teachers from Excel</h1>
+    <h1 class="mb-4">Add Adminis from Excel</h1>
     <!-- Form to upload Excel file -->
     <form method="post" enctype="multipart/form-data" class="mb-3">
         {% csrf_token %}
@@ -11,7 +11,7 @@
             <input type="file" name="excel_file" id="excel_file" class="form-control-file" accept=".xls,.xlsx">
         </div>
         <button type="submit" class="btn btn-primary mr-2">Upload</button>
-        <a href="{% static 'samples/Add_teachers.xlsx' %}" download class="btn btn-secondary">Download Sample File</a>
+        <a href="{% static 'samples/Add_admins.xlsx' %}" download class="btn btn-secondary">Download Sample File</a>
     </form>
 
     <!-- Display any errors -->
@@ -32,7 +32,7 @@
     <!-- Table to display added and updated users -->
     {% if context %}
         <h2 class="mt-5">Users Summary</h2>
-        <table class="table">
+        <table class="table table-striped">
             <thead>
                 <tr>
                     <th>Total Added Users</th>
@@ -51,7 +51,7 @@
     <!-- Table to display added users -->
     {% if context.added_users %}
         <h2>Added Users:</h2>
-        <table class="table">
+        <table class="table table-striped">
             <thead>
                 <tr>
                     <th>Email</th>
@@ -76,7 +76,7 @@
     <!-- Table to display updated users -->
     {% if context.updated_users %}
         <h2>Updated Users:</h2>
-        <table class="table">
+        <table class="table table-striped">
             <thead>
                 <tr>
                     <th>Email</th>
@@ -99,36 +99,29 @@
     {% endif %}
 
     <!-- Table to display added teachers -->
-    {% if context.added_teachers %}
-    <h2>Added Teachers:</h2>
-    <table class="table">
+    {% if context.added_admins %}
+    <h2>Added Admins:</h2>
+    <table class="table table-striped">
         <thead>
             <tr>
                 <th>Email</th>
                 <th>First Name</th>
                 <th>Last Name</th>
-                <th>Departments</th>
-                <th>Subjects</th>
+                <th>Departments</th> 
             </tr>
         </thead>
         <tbody>
-            {% for teacher in context.added_teachers %}
+            {% for admin in context.added_admins %}
                 <tr>
-                    <td>{{ teacher.user.email }}</td>
-                    <td>{{ teacher.user.first_name }}</td>
-                    <td>{{ teacher.user.last_name }}</td>
+                    <td>{{ admin.user.email }}</td>
+                    <td>{{ admin.user.first_name }}</td>
+                    <td>{{ admin.user.last_name }}</td>
                     <td>
-                        {% for department in teacher.departments.all %}
+                        {% for department in admin.departments.all %}
                             {{ department.name }}
                             {% if not forloop.last %}, {% endif %}
                         {% endfor %}
-                    </td>
-                    <td>
-                        {% for subject in teacher.subjects.all %}
-                            {{ subject.name }}
-                            {% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    </td>
+                    </td> 
                 </tr>
             {% endfor %}
         </tbody>
@@ -136,36 +129,29 @@
     {% endif %}
 
     <!-- Table to display updated teachers -->
-    {% if context.updated_teachers %}
-    <h2>Updated Teachers:</h2>
-    <table class="table">
+    {% if context.updated_admins %}
+    <h2>Updated Admins:</h2>
+    <table class="table table-striped">
         <thead>
             <tr>
                 <th>Email</th>
                 <th>First Name</th>
                 <th>Last Name</th>
-                <th>Departments</th>
-                <th>Subjects</th>
+                <th>Departments</th> 
             </tr>
         </thead>
         <tbody>
-            {% for teacher in context.updated_teachers %}
+            {% for admin in context.updated_admins %}
                 <tr>
-                    <td>{{ teacher.user.email }}</td>
-                    <td>{{ teacher.user.first_name }}</td>
-                    <td>{{ teacher.user.last_name }}</td>
+                    <td>{{ admin.user.email }}</td>
+                    <td>{{ admin.user.first_name }}</td>
+                    <td>{{ admin.user.last_name }}</td>
                     <td>
-                        {% for department in teacher.departments.all %}
+                        {% for department in admin.departments.all %}
                             {{ department.name }}
                             {% if not forloop.last %}, {% endif %}
                         {% endfor %}
-                    </td>
-                    <td>
-                        {% for subject in teacher.subjects.all %}
-                            {{ subject.name }}
-                            {% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    </td>
+                    </td> 
                 </tr>
             {% endfor %}
         </tbody>

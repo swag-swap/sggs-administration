@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container table-responsive">
+    <h2 class="my-4">Borrower List</h2>
+    <form class="form-inline mb-4" method="get">
+        <div class="form-group m-2">
+            <label for="borrower_name" class="mr-2">Borrower Username:</label>
+            <input type="text" class="form-control" id="borrower_name" name="borrower_name" value="{{ request.GET.borrower_name }}">
+        </div>
+        <div class="form-group m-2">
+            <label for="book_isbn" class="mr-2">Book ISBN:</label>
+            <input type="text" class="form-control" id="book_isbn" name="book_isbn" value="{{ request.GET.book_isbn }}">
+        </div>
+        <div class="form-group m-2">
+            <label for="return_date" class="mr-2">Return Date:</label>
+            <input type="date" class="form-control" id="return_date" name="return_date" value="{{ request.GET.return_date }}">
+        </div>
+        <div class="form-group m-2">
+            <label for="borrow_date" class="mr-2">Borrowed Date:</label>
+            <input type="date" class="form-control" id="borrow_date" name="borrow_date" value="{{ request.GET.borrow_date }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
+
+    <table class="table">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">Book ISBN</th>
+                <th scope="col">Borrower</th>
+                <th scope="col">Borrowed Date</th>
+                <th scope="col">Return Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for borrower in page_obj %}
+            <tr>
+                <td>{{ borrower.book.isbn }}</td>
+                <td>{{ borrower.borrower.username }}</td>
+                <td>{{ borrower.borrowed_date }}</td>
+                <td>{{ borrower.return_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination" style="display: flex; justify-content: center; margin-top: 20px;">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+            {% endif %}
+
+            <li class="page-item active"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

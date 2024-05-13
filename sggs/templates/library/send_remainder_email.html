@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mt-5">Send Reminder Email</h1>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Send Reminder Email</button>
+    </form>
+
+    {% if message %}
+    <h2>{{ message }}</h2> 
+    {% endif %}
+</div>
+{% endblock %}

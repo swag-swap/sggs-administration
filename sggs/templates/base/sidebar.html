@@ -2,7 +2,7 @@
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
     <!-- Sidebar - Brand -->
-    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'home' %}">
         <div class="sidebar-brand-icon ">
             <img src="{% static 'images/sggs_logo.png' %}" alt="logo" class="img-fluid rounded-circle">
             <!-- <i class="fas fa-fw fa-tachometer-alt"></i> -->
@@ -20,6 +20,19 @@
             <a class="nav-link" href="{% url 'admin_home' %}">
                 <i class="fas fa-fw fa-tachometer-alt"></i>
                 <span>Dashboard</span></a>
+        </li>
+
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'notifications' %}">
+                <i class="fas fa-fw fa-tachometer-alt"></i>
+                <span>Notifications</span></a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'edit_administrator_detail' %}">
+                <i class="fas fa-fw fa-tachometer-alt"></i>
+                <span>Edit profile</span></a>
         </li>
  
         <!-- Divider -->
@@ -82,6 +95,13 @@
 
         <!-- Manage Teacher -->
         <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_teacher_add_excel'%}">
+                <i class="fas fa-fw fa-table"></i>
+                <span>Add Teacher</span></a>
+        </li> 
+
+
+        <li class="nav-item">
             <a class="nav-link" href="{% url 'admin_manage_teacher'%}">
                 <i class="fas fa-fw fa-table"></i>
                 <span>Manage Teacher</span></a>
@@ -95,11 +115,33 @@
             Student
         </div> 
 
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_student_add_excel'%}">
+                <i class="fas fa-fw fa-table"></i>
+                <span>Add Student</span></a>
+        </li> 
+
         <!-- Manage Student -->
         <li class="nav-item">
             <a class="nav-link" href="{% url 'admin_student_manage'%}">
                 <i class="fas fa-fw fa-table"></i>
                 <span>Manage Student</span></a>
+        </li> 
+
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+
+        <!-- Heading -->
+        <div class="sidebar-heading">
+            Admins
+        </div> 
+
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_admin_add_excel'%}">
+                <i class="fas fa-fw fa-table"></i>
+                <span>Add Admins</span></a>
         </li> 
     </div> 
     {% endif %}
@@ -114,22 +156,22 @@
  
 
         <li class="nav-item">
-            <a class="nav-link" href="{% url 'teacher_edit_profile' %}">
+            <a class="nav-link" href="{% url 'edit_teacher_detail' %}">
                 <i class="fas fa-fw fa-table"></i>
                 <span>Edit Profile</span></a>
         </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="tables.html">
+        <!-- <li class="nav-item">
+            <a class="nav-link" href="#">
                 <i class="fas fa-fw fa-table"></i>
                 <span>Notifications</span></a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="tables.html">
+            <a class="nav-link" href="#">
                 <i class="fas fa-fw fa-table"></i>
                 <span>Feedback</span></a>
-        </li> 
+        </li>  -->
 
         <li class="nav-item">
             <a class="nav-link" href="{% url 'teacher_subject_list' %}">
@@ -168,22 +210,22 @@
  
 
         <li class="nav-item">
-            <a class="nav-link" href="tables.html">
+            <a class="nav-link" href="{% url 'edit_teacher_detail' %}">
                 <i class="fas fa-fw fa-table"></i>
                 <span>Edit Profile</span></a>
         </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="tables.html">
+        <!-- <li class="nav-item">
+            <a class="nav-link" href="#">
                 <i class="fas fa-fw fa-table"></i>
                 <span>Notifications</span></a>
-        </li>
+        </li> -->
 
-        <li class="nav-item">
-            <a class="nav-link" href="tables.html">
+        <!-- <li class="nav-item">
+            <a class="nav-link" href="#">
                 <i class="fas fa-fw fa-table"></i>
                 <span>Feedback</span></a>
-        </li> 
+        </li>  -->
 
         <li class="nav-item">
             <a class="nav-link" href="{% url 'student_mark_attendence' %}">
@@ -200,6 +242,79 @@
     </div>
     {% endif %}
 
+
+    {% if is_librarian %}
+    <div>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider"> 
+        
+        <li class="nav-item active">
+            <a class="nav-link" href="{% url 'library_home' %}">
+                <i class="fas fa-fw fa-tachometer-alt"></i>
+                <span>Dashboard</span></a>
+        </li>
+            
+        <!-- Divider -->
+        <hr class="sidebar-divider"> 
+        
+        <!-- Heading -->
+        <div class="sidebar-heading">
+            Books
+        </div>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'library_book_list' %}">
+                <i class="fas fa-fw fa-table"></i>
+                <span>Book List</span></a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'library_book_add' %}">
+                <i class="fas fa-fw fa-table"></i>
+                <span>Add Book</span></a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'library_book_add_excel' %}">
+                <i class="fas fa-fw fa-table"></i>
+                <span>Add Books</span></a>
+        </li>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+
+
+        <!-- Heading -->
+        <div class="sidebar-heading">
+            Borrowing
+        </div>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'library_book_borrow_list' %}">
+                <i class="fas fa-fw fa-table"></i>
+                <span>Borrow's Table</span></a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'library_book_borrow' %}">
+                <i class="fas fa-fw fa-table"></i>
+                <span>Borrow Book</span></a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'library_book_return' %}">
+                <i class="fas fa-fw fa-table"></i>
+                <span>Return Book</span></a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'library_send_reminder_email' %}">
+                <i class="fas fa-fw fa-table"></i>
+                <span>Send Message</span></a>
+        </li>
+    </div>
+    {% endif %}
 
 
     <hr class="sidebar-divider d-none d-md-block">

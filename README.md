@@ -23,9 +23,9 @@ This website is the administration website for the SGGS college management. Ther
 - [+] Subject model, Test models, attendence models
 - [+] question making for the admin(like staff, teacher, etc)
 - [+] question taking steps (like for admin all stuffs)
-- [ ] attendence page
+- [+] attendence page
 - [+] attendence showing
-- [ ] Test making page
+- [+] Test making page
 - [+] Test page
 - [ ] Result show for teacher and student
 - [+] Library models
@@ -51,6 +51,13 @@ This website is the administration website for the SGGS college management. Ther
     ```
     python3 manage.py collectstatic
     ```
+5) Change the source 
+    ```
+    source venv/bin/activate
+    ```
+
+6) For installing the requirement.txt
+    pip install -r requirements.txt
 
 ## Notification numbers
 1) Teacher Profile Update Notification:  

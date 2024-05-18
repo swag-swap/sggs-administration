@@ -22,6 +22,7 @@
             </div>
             <div> 
                 <a href="{% url 'admin_edit_session' session.id %}" class="btn btn-primary mr-2">Edit</a>
+                <a href="{% url 'admin_add_session_students' session.id %}" class="btn btn-primary mr-2">Add Students</a>
                 <a href="{% url 'session_attendance' session.id %}" class="btn btn-primary">View Attendance</a>
             </div>
         </li> 

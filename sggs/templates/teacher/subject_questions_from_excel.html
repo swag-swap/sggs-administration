@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Upload Questions from Excel - {{ subject.name }}</h1>
+    {% if messages %}
+        <div class="alert alert-danger">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="excel_file">Select Excel File:</label>
+            <input type="file" class="form-control-file" id="excel_file" name="excel_file" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+
+    {% if errors %}
+        <div class="alert alert-danger mt-4">
+            <h4>Errors:</h4>
+            <ul>
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {% if added_questions %}
+        <div class="alert alert-success mt-4">
+            <h4>Successfully Added Questions:</h4>
+            <table class="table table-bordered mt-3">
+                <thead>
+                    <tr>
+                        <th>Sr. No.</th>
+                        <th>Question</th>
+                        <th>Option 1</th>
+                        <th>Option 2</th>
+                        <th>Option 3</th>
+                        <th>Option 4</th>
+                        <th>Correct Option</th>
+                        <th>Explanation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for question in added_questions %}
+                        <tr>
+                            <td>{{ question.0 }}</td>
+                            <td>{{ question.1 }}</td>
+                            <td>{{ question.2 }}</td>
+                            <td>{{ question.3 }}</td>
+                            <td>{{ question.4 }}</td>
+                            <td>{{ question.5 }}</td>
+                            <td>{{ question.6 }}</td>
+                            <td>{{ question.7 }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

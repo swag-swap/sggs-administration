@@ -34,6 +34,8 @@ urlpatterns = [
     path('session/edit/<int:session_id>/', session_edit, name='admin_edit_session'), 
     path('session/delete/<int:session_id>/', session_delete, name='admin_delete_session'), 
     path('session/<int:session_id>/attendance/', session_attendance, name='session_attendance'),
+    path('session/<int:session_id>/add/students', session_student_add, name='admin_add_session_students'),
+
 
 
     path('manage/teacher/', manage_teacher, name='admin_manage_teacher'),

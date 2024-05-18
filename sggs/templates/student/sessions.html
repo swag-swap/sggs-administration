@@ -3,17 +3,32 @@
 <div class="container mt-5">
     <h1>Active Sessions</h1>
     <div class="row">
-        {% if sessions %}
-            {% for session in sessions %}
+        {% if session_info %}
+            {% for s in session_info %}
                 <div class="col-md-12 mb-4">
                     <div class="card">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-8">
-                                    <h5 class="card-title">{{ session.subject.name }}</h5>
+                                    <h5 class="card-title">{{ s.session.subject.name }}-{{s.session.year}}</h5>
+                                    <!-- <p>{{session_info.row_count}}, {{session_info.attendance_status}}, {{session_info.attendance_data}}</p> -->
                                 </div>
+                                {% if s.attendance_status %}
+                                    {% if s.row_count != 0 %}
+                                        {% if s.attendance_data == 1 %}
+                                        <div class="col-md-4 text-right">
+                                            <a href="#" class="btn btn-primary">Already Marked Attendance</a>
+                                        </div>
+                                        {% endif %}
+                                    {% endif %}
+                                    {% if s.attendance_data == 0 or s.attendance_data == -1%}
+                                    <div class="col-md-4 text-right">
+                                        <a href="{% url 'student_mark_attendence' s.session.id %}" class="btn btn-primary">Mark Attendance</a>
+                                    </div>
+                                    {% endif %}
+                                {% endif %}
                                 <div class="col-md-4 text-right">
-                                    <a href="{% url 'student_session_detail' session.id %}" class="btn btn-primary">View Session</a>
+                                    <a href="{% url 'student_session_detail' s.session.id %}" class="btn btn-primary">View Session</a>
                                 </div>
                             </div> 
                         </div>

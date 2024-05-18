@@ -12,6 +12,7 @@ urlpatterns = [
 
     # Subjects
     path('subject/<int:subject_id>/add_question/', views.add_question, name='teacher_add_question'),
+    path('subject/<int:subject_id>/questions/excel/', views.subject_questions_from_excel, name='teacher_subject_questions_from_excel'),
     path('subject/<int:subject_id>/questions/', views.subject_questions, name='teacher_subject_questions'),
     path('subjects/', views.subject_list, name='teacher_subject_list'),
     path('question/delete/<int:subject_id>/<int:question_id>/', views.teacher_delete_question, name='teacher_delete_question'),

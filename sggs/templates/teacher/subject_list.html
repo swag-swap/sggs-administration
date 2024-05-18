@@ -11,6 +11,7 @@
                     <div class="btn-group" role="group" aria-label="Subject Actions">
                         <a href="{% url 'teacher_subject_questions' subject.id %}" class="btn btn-primary btn-sm">See Questions</a>
                         <a href="{% url 'teacher_add_question' subject.id %}" class="btn btn-primary btn-sm">Add Question</a>
+                        <a href="{% url 'teacher_subject_questions_from_excel' subject.id %}" class="btn btn-primary btn-sm">Add Questions from excel</a>
                     </div>
                 </div>
             {% endfor %}

@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import connection
-from datetime import datetime
+from datetime import datetime, date
 from django.http import JsonResponse
 from django.utils import timezone
 from administration.models import Student, ClassSession
-import random, json
+import random, json 
 
 def validate(request):
     if request.user.is_student < 1:
@@ -57,17 +57,41 @@ def home(request):
 
 def sessions(request):
     if not validate(request):
-        return render(request, 'base/404.html')
-    student_department = request.user.student_profile.department
-    student_year = request.user.student_profile.year
+        return render(request, 'base/404.html') 
     student_id = request.user.student_profile.id
     student = Student.objects.get(id=student_id)
     
-    # Retrieve active sessions related to the student's department and year
     sessions = ClassSession.objects.filter(students=student)
+    today = date.today().strftime('%Y-%m-%d')
+    # print(today)
+    session_info = []
+
+    for session in sessions:
+        attendance_table_name = session.attendence_table_name
+        if session.attendence_active:
+            attendance_status = True
+        else :
+            attendance_status = False
+        cursor = connection.cursor()
+        cursor.execute(f"SELECT COUNT(*) FROM {attendance_table_name} WHERE student_id = {student_id} AND date = '{today}'")
+        row_count = cursor.fetchone()[0]
+        if row_count !=0:
+            cursor.execute(f"SELECT is_present FROM {attendance_table_name} WHERE student_id = {student_id} AND date = '{today}'")
+            attendance_data = cursor.fetchone()[0]
+        else:
+            attendance_data = -1
+        # print(attendance_data, attendance_status, row_count)
+
+        session_info.append({
+            "session": session,
+            "attendance_status": attendance_status,
+            "attendance_data":attendance_data,
+            "row_count": row_count,
+        }) 
+    # print(session_info)
     
     context = {
-        'sessions': sessions,
+        'session_info': session_info,
         'is_student': True, 
         'user': request.user
     }
@@ -432,25 +456,36 @@ def test_result(request, session_id, test_id):
 
 
 
-def mark_attendance(request):
+def mark_attendance(request,session_id):
     if not validate(request):
-        return render(request, 'base/404.html')
-    if request.user.is_student == 1:
-        if request.method == 'POST':
-            student_id = Student.objects.get(user=request.user).id
-            date = request.POST.get('date') 
-            is_present = request.POST.get('is_present')
+        return render(request, 'base/404.html')  
+    session = get_object_or_404(ClassSession, pk=session_id)
+    if not session.attendence_active:
+        return render(request, 'base/404.html') 
+    student_id = Student.objects.get(user=request.user).id
+    formatted_date = date.today().strftime('%Y-%m-%d')
+    is_present = 1
 
-            # Insert attendance record using raw SQL query
-            with connection.cursor() as cursor:
-                cursor.execute("INSERT INTO z_2024_cse_Semester_1_OS_attendence (student_id, date, is_present) VALUES (%s, %s, %s)",
-                            [student_id, date, is_present])
+    # Insert attendance record using raw SQL query
+    with connection.cursor() as cursor:
+        cursor.execute(f"""SELECT COUNT(*) FROM {session.attendence_table_name} WHERE student_id = {student_id} AND date = '{formatted_date}'""")
+        row_count = cursor.fetchone()[0]
 
-            return redirect('admin_home')  # Redirect to a success page
+        if row_count == 0: 
+            cursor.execute(f"""
+                INSERT INTO {session.attendence_table_name} (student_id, date, is_present)
+                VALUES ({student_id}, '{formatted_date}', {is_present})
+            """) 
+        else: 
+            cursor.execute(f"""
+                UPDATE {session.attendence_table_name}
+                SET is_present = {is_present}
+                WHERE student_id = {student_id} AND date = '{formatted_date}'
+            """) 
+    print(student_id, formatted_date, "dflkjalsdkf")
+    return redirect('student_sessions')  
 
-        return render(request, 'student/mark_attendance.html',{'is_student': True, 'user': request.user})
-    else:
-        return render(request, 'base/404.html')
+    # return redirect('student_sessions')
 
 
 def attendance_success(request):

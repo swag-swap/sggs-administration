@@ -149,7 +149,7 @@ def edit_student_detail(request):
             student = form.save()
             student.user = request.user
 
-            if request.user.is_superuser: 
+            if request.user.is_administrator: 
                 student.user.is_student = 1
             else: 
                 try:
@@ -193,7 +193,7 @@ def edit_teacher_detail(request):
             teacher = form.save()
             teacher.user = request.user
 
-            if request.user.is_superuser: 
+            if request.user.is_administrator: 
                 teacher.user.is_teacher = 1
                 teacher.user.is_staff = True
  
@@ -241,7 +241,7 @@ def edit_administrator_detail(request):
             administrator = form.save()
             administrator.user = request.user
 
-            if request.user.is_superuser: 
+            if request.user.is_administrator: 
                 administrator.user.is_administrator = 1
                 administrator.user.is_superuser = True
             else: 
@@ -290,7 +290,7 @@ def edit_librarian_detail(request):
             librarian = form.save()
             librarian.user = request.user
 
-            if request.user.is_superuser: 
+            if request.user.is_administrator: 
                 librarian.user.is_librarian = 1
                 librarian.user.is_superuser = True
             else: 

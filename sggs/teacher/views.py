@@ -1,13 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import TeacherDetailsForm, AttendanceExtractionForm, QuestionForm, TestCreationForm
 from administration.models import Student, Teacher, Notification, ClassSession, Subject, UploadedImage
-from administration.views import calculate_attendance_percentage
+from administration.views import calculate_attendance_percentage, parse_excel
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 import pandas as pd
 import os
+from datetime import datetime, date
 from django.http import HttpResponse, JsonResponse
 from django.db import  connection, transaction
 from django.core.files.storage import default_storage
@@ -19,7 +20,7 @@ def teacher_home(request):
     if request.user.is_teacher == -1:
         render(request, 'base/404.html')
     teacher = Teacher.objects.get(user=request.user) 
-    sessions = teacher.session_teachers.all()
+    sessions = teacher.session_teachers.filter(active=True)
     context = {'is_teacher':True, 'user':request.user,'teacher': teacher, 'sessions': sessions}
     return render(request, 'teacher/home.html', context)
 
@@ -55,18 +56,20 @@ def edit_profile(request):
 
 @login_required
 def start_attendence(request, session_id):
-    if request.user.is_teacher == -1:
+    if request.user.is_teacher <= 0:
         render(request, 'base/404.html')
     session = get_object_or_404(ClassSession, pk=session_id)
     session.attendence_active = True
+    session.total_active_days+=1
     session.save()
-    Notification.objects.create(
-            user = request.user,
-            message=f'Attendance is now active for session {session.id}',
-            notification_type=7,
-            session=session,
-            for_student=True
-        )
+    
+    # Notification.objects.create(
+    #         user = request.user,
+    #         message=f'Attendance is now active for session {session.id}',
+    #         notification_type=7,
+    #         session=session,
+    #         for_student=True
+    #     )
     return redirect('teacher_home')
 
 @login_required
@@ -82,42 +85,79 @@ def stop_attendence(request, session_id):
 
 @login_required
 def take_attendance(request, session_id):
-    session = get_object_or_404(ClassSession, pk=session_id)
-    
-    if request.method == 'POST': 
-        excel_file = request.FILES['excel_file']
-        attendance_date = request.POST['attendance_date'] 
-        df = pd.read_excel(excel_file) 
-        cursor = connection.cursor()
-         
-        for index, row in df.iterrows():
-            reg_no = row['Registration Number']  
-            is_present = row['is_present']   
-            if is_present:
+    if request.user.is_teacher == -1:
+        render(request, 'base/404.html')
+    try:
+        session = get_object_or_404(ClassSession, pk=session_id)
+    except Exception as e:  
+        render(request, 'base/404.html')
+    if request.method == 'POST' and request.FILES.get('excel_file'):
+        excel_file = request.FILES['excel_file'] 
+        try:
+            excel_data = parse_excel(excel_file)
+        except Exception as e: 
+            errors = ['Error processing Excel file'] 
+            messages.error(request, f"Error processing Excel file: {e}")
+            return render(request, 'administration/attendance_take.html', {'errors': errors, 'is_administration': True, 'user': request.user}) 
+        students = session.students.all()
+
+        added_attendance = []
+        already_filled = []
+        student_not_exist = []
+        errors = []
+        for row in excel_data:
+            reg_no = row.get('Registration Number', '').strip().upper()
+            present = row.get('is_present', '').strip().lower() 
+            attendance_date = row.get('Attendance Date', '')
+            print(attendance_date)
+            try:
+                formatted_date = attendance_date.strftime('%Y-%m-%d')
+            except Exception as e: 
+                errors.append(f'Invalid date: {attendance_date} for reg_no: {reg_no}.')
+                continue
+            if present == 'p':
                 is_present = 1
             else :
                 is_present = 0
-            
-            print(reg_no, is_present)
-            
-            try:
-                student = Student.objects.get(reg_no=reg_no)
-                student_id = student.id
-                print(student_id)
-            except Student.DoesNotExist:
-                return JsonResponse({'error': f'Student with registration number {reg_no} not found'}, status=404)
-            except Exception as e:
-                return JsonResponse({'error': str(e)}, status=500)
-            
-            try: 
-                cursor.execute(f""" INSERT INTO {session.attendence_table_name} (student_id, date, is_present)   VALUES (?, ?, ?)   CONFLICT(student_id, date) DO UPDATE SET is_present = excluded.is_present""", (student_id, attendance_date, is_present))
-            except Exception as e: 
-                return JsonResponse({'error': str(e)}, status=500)
-         
+            student = None
+            # print(reg_no, is_present)
+            for s in students:
+                if s.reg_no == reg_no:
+                    student = s
+            if not student:
+                student_not_exist.append(reg_no)
+                continue 
+                
+            student_id = student.id  
+            print(reg_no, is_present, student.reg_no, attendance_date, formatted_date)
+             
+            with connection.cursor() as cursor: 
+                cursor.execute(f"""SELECT COUNT(*) FROM {session.attendence_table_name} WHERE student_id = {student_id} AND date = '{formatted_date}'""")
+                row_count = cursor.fetchone()[0]
+
+                if row_count == 0: 
+                    cursor.execute(f"""
+                        INSERT INTO {session.attendence_table_name} (student_id, date, is_present)
+                        VALUES ({student_id}, '{formatted_date}', {is_present})
+                    """)
+                    added_attendance.append([student, formatted_date])
+                else: 
+                    cursor.execute(f"""
+                        UPDATE {session.attendence_table_name}
+                        SET is_present = {is_present}
+                        WHERE student_id = {student_id} AND date = '{formatted_date}'
+                    """)
+                    already_filled.append([student, formatted_date])
         
-        return JsonResponse({'message': 'Attendance submitted successfully'})
+        with connection.cursor() as cursor: 
+            cursor.execute(f"""SELECT COUNT(DISTINCT date) FROM {session.attendence_table_name}""")
+            distinct_dates_count = cursor.fetchone()[0]
+            session.total_active_days = distinct_dates_count
+            session.save()
+           
+        return render(request, 'teacher/attendance_take.html', {'added_attendance': added_attendance, 'already_filled': already_filled, 'student_not_exist': student_not_exist, 'errors': errors, 'is_teacher': True, 'user': request.user, 'session': session})
     
-    return render(request, 'teacher/attendance_take.html', {'is_teacher':True, 'user':request.user,'session': session})
+    return render(request, 'teacher/attendance_take.html', {'is_teacher': True, 'user': request.user, 'session': session})
 
 
 # Subject
@@ -229,6 +269,53 @@ def subject_questions(request, subject_id):
     #     print(row)  
 
     return render(request, 'teacher/subject_questions.html', {'is_teacher':True, 'user':request.user,'rows': rows, 'subject':subject})
+
+def subject_questions_from_excel(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id) 
+    question_table_name = subject.subjects_question_table_name   
+
+    if request.method == 'POST' and request.FILES.get('excel_file'):
+        excel_file = request.FILES['excel_file'] 
+        try:
+            excel_data = parse_excel(excel_file)
+        except Exception as e: 
+            errors = ['Error processing Excel file'] 
+            messages.error(request, f"Error processing Excel file: {e}")
+            return render(request, 'teacher/subject_questions_from_excel.html', {'errors': errors, 'is_teacher': True, 'user': request.user})
+
+        added_questions = []
+        errors = []
+        cursor = connection.cursor()
+        for row in excel_data: 
+            sr_no = row.get('Sr. No.', '')
+            question = row.get('Question', '')
+            option1 = row.get('Option 1', '')
+            option2 = row.get('Option 2', '')
+            option3 = row.get('Option 3', '')
+            option4 = row.get('Option 4', '')
+            correct_option = (row.get('Correct Option', ''))
+            try:
+                correct_option = int(correct_option)
+            except Exception as e: 
+                errors.append(e)
+                continue 
+            if(correct_option<=0 and correct_option>4 ):
+                errors.append(f'Sr. no.: {sr_no} insert the correct in between [1,4].')
+                continue
+            explanation = row.get('Explanation', '')
+            try:
+                cursor.execute(f"""
+                    INSERT INTO {question_table_name} (author, question, option1, option2, option3, option4, correct_option, explanation) VALUES ({request.user.id}, '{question}', '{option1}', '{option2}', '{option3}', '{option4}', {correct_option},' {explanation}')
+                """)
+            except Exception as e: 
+                errors.append(e)
+                continue
+            added_questions.append([sr_no, question, option1, option2, option3, option4, correct_option, explanation])
+
+        return render(request, 'teacher/subject_questions_from_excel.html', {'errors': errors, 'is_teacher': True, 'user': request.user, 'added_questions': added_questions})
+
+    return render(request, 'teacher/subject_questions_from_excel.html', { 'is_teacher': True, 'user': request.user})
+            
 
 
 # Sessions
@@ -479,3 +566,19 @@ def test_edit_questions(request, session_id, test_id):
             questions = cursor.fetchall()
         return render(request, 'teacher/test_edit_questions.html', {'is_teacher': True, 'user': request.user,'test_id': test_id, 'questions': questions})
     
+# @login_required
+# def test_result(request, session_id, test_id): 
+#     if request.user.is_teacher <= 0:
+#         return render(request, 'base/404.html') 
+     
+#     session = ClassSession.objects.get(id=session_id)  
+#     students = session.students.all()
+#     test_results = {}
+#     for student in students:
+#         try: 
+#             result = TestResult.objects.get(student=student, test=test) 
+#             test_results[student] = result
+#         except TestResult.DoesNotExist:
+#             # If the result doesn't exist, add a placeholder
+#             test_results[student] = None
+

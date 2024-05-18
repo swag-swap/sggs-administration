@@ -37,7 +37,7 @@ def session_add(request):
         if request.method == 'POST':
             form = ClassSessionForm(request.POST)
             if form.is_valid():
-                print(form)
+                # print(form)
                 new_session = form.save(commit=False)
                 
                 existing_sessions = ClassSession.objects.filter(
@@ -64,7 +64,7 @@ def session_edit(request, session_id):
         if request.method == 'POST':
             form = EditClassSessionForm(request.POST, instance=session)
             if form.is_valid():
-                print(form)
+                # print(form)
                 form.save()
                 return redirect('admin_session_list')  
         else:
@@ -102,6 +102,50 @@ def session_list(request):
         return render(request, 'administration/session_list.html', {'is_administration': True, 'user': request.user,'sessions': sessions, 'form': form})
     else:
         return render(request, 'base/404.html')
+    
+@login_required
+def session_student_add(request, session_id):
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
+    
+    try:
+        session = ClassSession.objects.get(id=session_id)
+    except ClassSession.DoesNotExist: 
+        return render(request, 'administration/session_student_add_from_excel.html', {'is_administration': True, 'user': request.user})
+
+    if request.method == 'POST' and request.FILES.get('excel_file'):
+        excel_file = request.FILES['excel_file'] 
+        try:
+            excel_data = parse_excel(excel_file)
+        except Exception as e: 
+            errors = ['Error processing Excel file'] 
+            messages.error(request, f"Error processing Excel file: {e}")
+            return render(request, 'administration/session_student_add_from_excel.html', {'errors': errors, 'is_administration': True, 'user': request.user})
+        
+        added_students = []
+        student_not_exist = []
+        errors = []
+
+        for row in excel_data: 
+            email = row.get('Email', '').strip()
+            sggs_mail = email.split('@')[1]
+            reg_no = email.split('@')[0].upper()
+            if not email and sggs_mail != 'sggs.ac.in':
+                errors.append("Email is missing in one or more rows.")
+                continue
+            
+            try:
+                student = Student.objects.get(reg_no=reg_no)
+            except Student.DoesNotExist: 
+                student_not_exist.append(email)
+                continue
+              
+            added_students.append(student)
+        session.students.add(*added_students)
+        
+        return render(request, 'administration/session_student_add_from_excel.html', {'added_students': added_students, 'student_not_exist': student_not_exist, 'is_administration': True, 'user': request.user})
+    
+    return render(request, 'administration/session_student_add_from_excel.html', {'is_administration': True, 'user': request.user})
 
 
 # Subject

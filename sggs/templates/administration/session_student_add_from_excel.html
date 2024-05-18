@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Add Students to Session</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="excel_file">Upload Excel File:</label>
+            <input type="file" name="excel_file" id="excel_file" accept=".xlsx, .xls" class="form-control-file">
+        </div>
+        <button type="submit" class="btn btn-primary">Add Students</button>
+        <a href="{% static 'samples/Add_session_students.xlsx' %}" download class="btn btn-secondary">Download Sample File</a>
+    </form>
+
+    {% if added_students %}
+    <div class="mt-4">
+        <h3>Successfully Added Students:</h3>
+        <ul>
+            {% for student in added_students %}
+            <li>{{ student.user.email }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if student_not_exist %}
+    <div class="mt-4">
+        <h3>Students Not Found:</h3>
+        <ul>
+            {% for email in student_not_exist %}
+            <li>{{ email }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if errors %}
+    <div class="mt-4">
+        <h3>Error:</h3>
+        <p>{{ errors }}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

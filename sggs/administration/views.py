@@ -447,7 +447,7 @@ def add_student_from_excel(request):
                     'username': username,
                     'first_name': first_name,
                     'last_name': surname,
-                    'password': email,
+                    'password': make_password(email),
                 })
 
                 if not created:

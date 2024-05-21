@@ -244,14 +244,22 @@ def teacher_delete_question(request, subject_id, question_id):
     image_ids = cursor.fetchone()
     print(question_table_name, question_id)
     cursor = connection.cursor()
-    cursor.execute(f"DELETE FROM {question_table_name} WHERE id = {question_id};")
-    if image_ids:
-        for id in image_ids:
-            if id is not None:
-                uploaded_image = UploadedImage.objects.get(id=id)
-                uploaded_image.delete()
-    print("Deleted all question images")
-    return redirect('teacher_add_question', subject_id=subject_id) 
+    try:
+        with transaction.atomic():
+            cursor.execute(f"DELETE FROM {question_table_name} WHERE id = {question_id};")
+            
+            if image_ids:
+                for id in image_ids:
+                    if id is not None:
+                        uploaded_image = UploadedImage.objects.get(id=id)
+                        uploaded_image.delete()
+                        
+            print("Deleted all question images")
+
+    except Exception as e:
+        return HttpResponse("Test has this question, you can't delete this question!!!!", status=404)
+    
+    return redirect('teacher_subject_questions', subject_id=subject_id) 
 
 @login_required
 def subject_questions(request, subject_id):

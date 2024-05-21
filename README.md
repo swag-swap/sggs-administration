@@ -17,7 +17,7 @@ This website is the administration website for the SGGS college management. Ther
 
 ## Todo
 - [+] Registration
-- [+] Login 
+- [+] Login     
 - [+] profile editing
 - [+] models for the admin, teacher, student
 - [+] Subject model, Test models, attendence models
@@ -30,6 +30,8 @@ This website is the administration website for the SGGS college management. Ther
 - [ ] Result show for teacher and student
 - [+] Library models
 - [+] Library Pages 
+- [ ] Edit Profile addtion
+- [ ] Notifications
 
 
 

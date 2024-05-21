@@ -116,7 +116,7 @@ def login(request):
                 return render(request, 'administration/login.html', {'form': form})
             username = email.split('@')[0]  
             password = form.cleaned_data['password']
-            user = authenticate(request, username=username, password=password, email=email)
+            user = authenticate(request, username=username, password=password, email=email) 
             if user is not None:
                 auth_login(request, user) 
                 return redirect('home')

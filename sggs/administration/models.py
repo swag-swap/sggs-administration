@@ -313,7 +313,11 @@ class ClassSession(models.Model):
                         test_id INTEGER REFERENCES {test_table_name}(id),
                         student_id INTEGER REFERENCES administration_student(id),
                         mark_obtained INTEGER,
-                        total_marks INTEGER
+                        total_marks INTEGER, 
+                        submission_time DATETIME,
+                        total_time_taken INTEGER,
+                        total_off_screen_time INTEGER,
+                        submitted BOOLEAN DEFAULT FALSE
                     );
                 """) 
                 print(f"Creating the table {result_table_name}...")
@@ -433,17 +437,17 @@ def handle_class_session_post_delete(sender, instance, **kwargs):
 
 
     try:
-        cursor.execute(f"DROP TABLE IF EXISTS {test_table_name};")
-        print(f"Dropping the table {test_table_name}...")
-    except Exception as e:
-        print(f"Error dropping table {test_table_name}: {e}")
-
-
-    try:
         cursor.execute(f"DROP TABLE IF EXISTS {test_questions_table_name};")
         print(f"Dropping the table {test_questions_table_name}...")
     except Exception as e:
         print(f"Error dropping table {test_questions_table_name}: {e}")
+
+
+    try:
+        cursor.execute(f"DROP TABLE IF EXISTS {test_table_name};")
+        print(f"Dropping the table {test_table_name}...")
+    except Exception as e:
+        print(f"Error dropping table {test_table_name}: {e}")
 
 
     try:

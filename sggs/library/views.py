@@ -139,12 +139,10 @@ def book_delete(request, book_id):
     if not request.user.is_authenticated or not request.user.is_librarian == 1:
         return render(request, 'base/404.html')  
     book = get_object_or_404(Book, id=book_id)
-
-    if request.method == 'POST': 
-        book.delete() 
-        return redirect('library_book_list')
+    print(book, "HIIII")
+    book.delete() 
+    return redirect('library_book_list')
  
-    return redirect('library_book_list')  
 
 
 

@@ -1,0 +1,445 @@
+{% extends 'base2.html' %} {% block content %}
+
+<!-- <div style="overflow: hidden;">
+
+</div> -->
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1>Test Details</h1>
+        <div id="timer" class="badge badge-warning h4">
+            Time Left: <span id="time"></span>
+        </div>
+    </div>
+    <hr />
+
+    {% if test_details %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2>{{ test_details.0 }}</h2>
+            <p><strong>Description:</strong> {{ test_details.1 }}</p>
+            <p><strong>Start Time:</strong> {{ test_details.2 }}</p>
+            <p><strong>End Time:</strong> {{ test_details.3 }}</p>
+            <p><strong>Number of Questions:</strong> {{ test_details.4 }}</p>
+        </div>
+    </div>
+
+    <form id="testForm">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-8">
+                {% for question in shuffled_questions %}
+                <div
+                    class="card mt-3 question"
+                    id="question_{{ forloop.counter }}"
+                    style="display: none"
+                >
+                    <div class="card-body">
+                        <div
+                            class="d-flex justify-content-between align-items-center mb-2"
+                        >
+                            <h5 class="card-title font-weight-bold">
+                                Question {{ forloop.counter }}: {{ question.0 }}
+                            </h5>
+                            <div class="marks-badge">
+                                Marks:
+                                <span class="badge badge-secondary"
+                                    >{{ question.12 }}</span
+                                >
+                            </div>
+                        </div>
+                        <div class="rounded p-2 my-2">
+                            <h5 class="card-title">{{ question.2 }}</h5>
+                            {% if question.3 %}
+                            <img
+                                src="/media/{{ question.3 }}"
+                                alt="Question Image"
+                                class="img-fluid m-4"
+                            />
+                            {% endif %}
+                        </div>
+
+                        <div class="form-check mx-4 border rounded p-1 my-2">
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="{{ forloop.counter }}"
+                                id="1_{{ question.0 }}"
+                                value="1"
+                            />
+                            <label
+                                class="form-check-label w-100"
+                                for="1_{{ question.0 }}"
+                            >
+                                {{ question.4 }} <br />
+                                {% if question.5 %}
+                                <img
+                                    src="/media/{{ question.5 }}"
+                                    alt="Option 1 Image"
+                                    class="img-fluid m-4"
+                                />
+                                {% endif %}
+                            </label>
+                        </div>
+                        <div class="form-check mx-4 border rounded p-1 my-2">
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="{{ forloop.counter }}"
+                                id="2_{{ question.0 }}"
+                                value="2"
+                            />
+                            <label
+                                class="form-check-label w-100"
+                                for="2_{{ question.0 }}"
+                            >
+                                {{ question.6 }} <br />
+                                {% if question.7 %}
+                                <img
+                                    src="/media/{{ question.7 }}"
+                                    alt="Option 2 Image"
+                                    class="img-fluid m-4"
+                                />
+                                {% endif %}
+                            </label>
+                        </div>
+                        <div class="form-check mx-4 border rounded p-1 my-2">
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="{{ forloop.counter }}"
+                                id="3_{{ question.0 }}"
+                                value="3"
+                            />
+                            <label
+                                class="form-check-label w-100"
+                                for="3_{{ question.0 }}"
+                            >
+                                {{ question.8 }} <br />
+                                {% if question.9 %}
+                                <img
+                                    src="/media/{{ question.9 }}"
+                                    alt="Option 3 Image"
+                                    class="img-fluid m-4"
+                                />
+                                {% endif %}
+                            </label>
+                        </div>
+                        <div class="form-check mx-4 border rounded p-1 my-2">
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="{{ forloop.counter }}"
+                                id="4_{{ question.0 }}"
+                                value="4"
+                            />
+                            <label
+                                class="form-check-label w-100"
+                                for="4_{{ question.0 }}"
+                            >
+                                {{ question.10 }} <br />
+                                {% if question.11 %}
+                                <img
+                                    src="/media/{{ question.11 }}"
+                                    alt="Option 4 Image"
+                                    class="img-fluid m-4"
+                                />
+                                {% endif %}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="col-md-4">
+                <div class="sticky-top">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Question Navigation</h5>
+                            <div class="d-flex flex-wrap">
+                                {% for question in shuffled_questions %}
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-primary m-1"
+                                    onclick="showQuestion({{ forloop.counter }})"
+                                >
+                                    {{ forloop.counter }}
+                                </button>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <button
+                        id="submitTestButton"
+                        type="submit"
+                        class="btn btn-info btn-lg w-100"
+                    >
+                        Submit Test
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <button
+        id="confirmButton"
+        type="button"
+        class="btn btn-primary btn-lg"
+        data-bs-toggle="modal"
+        data-bs-target="#fullscreenModal"
+    >
+        Click to Confirm
+    </button>
+
+    <div
+        class="modal fade w-100 aboso"
+        id="fullscreenModal"
+        tabindex="-1"
+        aria-labelledby="fullscreenModalLabel"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="fullscreenModalLabel">
+                        Confirmation
+                    </h5>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body">
+                    <p>This is the confirmation text.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+ {% else %}
+    <p>Test details not found. Please try again later.</p>
+    {% endif %}
+</div>
+<div class="card h-100 y-start" style="z-index: 20; top: 0; left: 0 ;">
+    <div class="card top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center">
+      <button id="confirmButton" type="button" class="btn btn-primary btn-lg">Click to Confirm</button>
+      <p class="card-text text-center mt-3">This is the confirmation text.</p>
+    </div>
+</div>
+<div style="width: 100vh;  height: 100vh; top: 0; left: 0; position: absolute; z-index: 10000;">Hi there</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+
+<script>
+    document.getElementById("confirmButton").addEventListener("click", () => {
+        if (window.confirm("Go to fullscreen!!!")) {
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+            } else if (document.documentElement.mozRequestFullScreen) {
+                // Firefox
+                document.documentElement.mozRequestFullScreen();
+            } else if (document.documentElement.webkitRequestFullscreen) {
+                // Chrome, Safari and Opera
+                document.documentElement.webkitRequestFullscreen();
+            } else if (document.documentElement.msRequestFullscreen) {
+                // IE/Edge
+                document.documentElement.msRequestFullscreen();
+            }
+        }
+    });
+
+    // document.addEventListener("contextmenu", (event) => event.preventDefault());
+
+    // document.onkeydown = function (e) {
+    //     // disable F12 key
+    //     if (e.keyCode == 123) {
+    //         return false;
+    //     }
+
+    //     // disable I key
+    //     if (e.ctrlKey && e.shiftKey && e.keyCode == 73) {
+    //         return false;
+    //     }
+
+    //     // disable J key
+    //     if (e.ctrlKey && e.shiftKey && e.keyCode == 74) {
+    //         return false;
+    //     }
+
+    //     // disable U key
+    //     if (e.ctrlKey && e.keyCode == 85) {
+    //         return false;
+    //     }
+    // };
+
+    function showQuestion(questionNumber) {
+        const questions = document.querySelectorAll(".question");
+        questions.forEach((question, index) => {
+            question.style.display =
+                index + 1 === questionNumber ? "block" : "none";
+        });
+    }
+
+    window.onload = function () {
+        // Show the first question by default
+        showQuestion(1);
+
+        const url = window.location.href;
+        const expectedUrlPattern =
+            "/student/session/{{session_id}}/test/{{test_id}}";
+        if (url.includes(expectedUrlPattern)) {
+            const selectedOptions = getSelectedOptions();
+            selectedOptions.forEach((selectedOption) => {
+                const radioButton = document.getElementById(selectedOption);
+                if (radioButton) {
+                    radioButton.checked = true;
+                }
+            });
+        }
+
+        // Timer Functionality
+        function updateTimer() {
+            const now = new Date();
+            const distance = testEndTime - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+
+            const hours = Math.floor(
+                (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+            );
+            const minutes = Math.floor(
+                (distance % (1000 * 60 * 60)) / (1000 * 60)
+            );
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById(
+                "time"
+            ).innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+            if (distance < 0) {
+                clearInterval(x);
+                document.getElementById("time").innerText = "EXPIRED";
+            }
+        }
+        updateTimer();
+        const x = setInterval(updateTimer, 1000);
+
+        // Warning and tracking for tab changes and developer tools
+        let warningCount = 0;
+        let devToolsCount = 0;
+
+        function sendWarning(message) {
+            warningCount++;
+            alert(message);
+            console.log(`Warning Count: ${warningCount}`);
+        }
+
+        function handleVisibilityChange() {
+            if (document.hidden) {
+                sendWarning("You have switched tabs or minimized the window.");
+            }
+        }
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        // window.addEventListener("blur", () => {
+        //     setTimeout(() => {
+        //         if (!document.hasFocus()) {
+        //             sendWarning(
+        //                 "You have switched tabs or minimized the window."
+        //             );
+        //         }
+        //     }, 200);
+        // });
+
+        // Detect Developer Tools
+        // let devtools = /./;
+        // devtools.toString = function() {
+        //     devToolsCount++;
+        //     sendWarning('Developer tools opened!');
+        //     console.log(`Developer Tools Count: ${devToolsCount}`);
+        // };
+        // console.log('%c', devtools);
+    };
+
+    function setSelectedOptions(selectedOptions, expirationTime) {
+        const now = new Date();
+        const expires = new Date(expirationTime);
+        const timeUntilExpires = expires.getTime() - now.getTime();
+        document.cookie = `selected_options=${selectedOptions.join(
+            "|"
+        )};expires=${expires.toUTCString()};`;
+    }
+
+    function getSelectedOptions() {
+        const cookies = document.cookie.split("; ");
+        for (const cookie of cookies) {
+            const [name, value] = cookie.split("=");
+            if (name === "selected_options") {
+                return value.split("|");
+            }
+        }
+        return [];
+    }
+
+    const testEndTimeString = "{{ test_details.3 }}";
+    const testEndTime = moment(
+        testEndTimeString,
+        "MMM Do, YYYY, h:mm a"
+    ).toDate();
+    const testEndTimeUTCString = testEndTime.toUTCString();
+    console.log(testEndTimeString, testEndTime, testEndTimeUTCString);
+
+    document.querySelectorAll(".form-check-input").forEach((radioButton) => {
+        radioButton.addEventListener("click", function () {
+            const selectedOptions = Array.from(
+                document.querySelectorAll(".form-check-input:checked")
+            ).map((input) => input.id);
+            setSelectedOptions(selectedOptions, testEndTimeUTCString);
+        });
+    });
+
+    document
+        .getElementById("submitTestButton")
+        .addEventListener("click", function (event) {
+            event.preventDefault();
+
+            const selectedOptions = Array.from(
+                document.querySelectorAll(".form-check-input:checked")
+            ).map((input) => input.id);
+            // if (selectedOptions.length !== {{ shuffled_questions|length }}) {
+            //     alert('Please answer all questions before submitting the test.');
+            //     return;
+            // }
+
+            var data = {
+                selected_options: selectedOptions,
+            };
+
+            fetch(
+                "/student/session/{{session_id}}/test/{{test_id}}/response/",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": document.getElementsByName(
+                            "csrfmiddlewaretoken"
+                        )[0].value,
+                    },
+                    body: JSON.stringify(data),
+                }
+            )
+                .then(function (response) {
+                    if (response.ok) {
+                        console.log("Test response submitted successfully.");
+                    } else {
+                        console.error("Error submitting test response.");
+                    }
+                })
+                .catch(function (error) {
+                    console.error("Error:", error);
+                });
+        });
+</script>
+
+{% endblock %}

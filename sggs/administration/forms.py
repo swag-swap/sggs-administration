@@ -132,7 +132,7 @@ class EditClassSessionForm(forms.ModelForm):
     )
     class Meta:
         model = ClassSession
-        fields = ['teacher', 'start_date', 'end_date']
+        fields = ['teacher','students', 'start_date', 'end_date']
         widgets = {
             'start_date': forms.DateInput(attrs={'type': 'date'}),
             'end_date': forms.DateInput(attrs={'type': 'date'}),

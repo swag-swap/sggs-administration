@@ -1,210 +1,405 @@
-{% extends 'base.html' %} {% block content %}
-<div class="container mt-5">
-    <h1>Test Details</h1>
+{% extends 'base2.html' %} {% block content %}
 
-    {% if test_details %}
-    <h2>{{ test_details.0 }}</h2>
-    <p>Description: {{ test_details.1 }}</p>
-    <p>Start Time: {{ test_details.2 }}</p>
-    <p>End Time: {{ test_details.3 }}</p>
-    <p>Number of Questions: {{ test_details.4 }}</p>
-
-    <form
-        id="testForm" 
+<div class="container-fluid  " id="test-content" style="display: none;">
+    <!-- Top content -->
+    <div
+        class="p-4 d-flex flex-wrap justify-content-between align-items-center bg-light border-bottom"
     >
-        {% csrf_token %} 
-        {% for question in shuffled_questions %}
-        <div class="card mt-3 question">
-            <div class="card-body">
+        <h1 class="">SGGS College of Engineering</h1>
+        <h1 id="timer" class="p-2 badge badge-warning h1 text-nowrap">
+            Time Left: <span id="time"></span>
+        </h1>
+    </div>
+
+    <!-- Middle content -->
+    <div class="card mt-3 mb-3 ">
+        <div class="card-body">
+            <h2>{{ test_details.0 }}</h2>
+            <p><strong>Start Time:</strong> {{ test_details.2 }}</p>
+            <p><strong>End Time:</strong> {{ test_details.3 }}</p>
+            <p><strong>Number of Questions:</strong> {{ test_details.4 }}</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Questions Section -->
+        <div class="col-md-8 mb-3">
+            <form id="testForm" class="">
+                {% csrf_token %} {% for question in shuffled_questions %}
                 <div
-                    class="d-flex justify-content-between align-items-center mb-2"
+                    class="card mt-3 question"
+                    id="question_{{ forloop.counter }}"
+                    style="display: none"
                 >
-                    <h5 class="card-title font-weight-bold">
-                        Question {{ forloop.counter }}--> {{ question.0 }}
-                    </h5>
-                    <div class="marks-badge">
-                        Marks:
-                        <span class="badge badge-secondary"
-                            >{{ question.12 }}</span
+                    <div class="card-body">
+                        <div
+                            class="d-flex justify-content-between align-items-center mb-2"
                         >
+                            <h5 class="card-title font-weight-bold">
+                                Question {{ forloop.counter }}: {{ question.0 }}
+                            </h5>
+                            <div class="marks-badge">
+                                Marks:
+                                <span class="badge badge-secondary"
+                                    >{{ question.12 }}</span
+                                >
+                            </div>
+                        </div>
+                        <div class="rounded p-2 my-2">
+                            <h5 class="card-title">{{ question.2 }}</h5>
+                            {% if question.3 %}
+                            <img
+                                src="/media/{{ question.3 }}"
+                                alt="Question Image"
+                                class="img-fluid m-4"
+                            />
+                            {% endif %}
+                        </div>
+
+                        <div class="form-check mx-4 border rounded p-1 my-2">
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="{{ forloop.counter }}"
+                                id="1_{{ question.0 }}"
+                                value="1"
+                            />
+                            <label
+                                class="form-check-label w-100"
+                                for="1_{{ question.0 }}"
+                            >
+                                {{ question.4 }} <br />
+                                {% if question.5 %}
+                                <img
+                                    src="/media/{{ question.5 }}"
+                                    alt="Option 1 Image"
+                                    class="img-fluid m-4"
+                                />
+                                {% endif %}
+                            </label>
+                        </div>
+                        <div class="form-check mx-4 border rounded p-1 my-2">
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="{{ forloop.counter }}"
+                                id="2_{{ question.0 }}"
+                                value="2"
+                            />
+                            <label
+                                class="form-check-label w-100"
+                                for="2_{{ question.0 }}"
+                            >
+                                {{ question.6 }} <br />
+                                {% if question.7 %}
+                                <img
+                                    src="/media/{{ question.7 }}"
+                                    alt="Option 2 Image"
+                                    class="img-fluid m-4"
+                                />
+                                {% endif %}
+                            </label>
+                        </div>
+                        <div class="form-check mx-4 border rounded p-1 my-2">
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="{{ forloop.counter }}"
+                                id="3_{{ question.0 }}"
+                                value="3"
+                            />
+                            <label
+                                class="form-check-label w-100"
+                                for="3_{{ question.0 }}"
+                            >
+                                {{ question.8 }} <br />
+                                {% if question.9 %}
+                                <img
+                                    src="/media/{{ question.9 }}"
+                                    alt="Option 3 Image"
+                                    class="img-fluid m-4"
+                                />
+                                {% endif %}
+                            </label>
+                        </div>
+                        <div class="form-check mx-4 border rounded p-1 my-2">
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="{{ forloop.counter }}"
+                                id="4_{{ question.0 }}"
+                                value="4"
+                            />
+                            <label
+                                class="form-check-label w-100"
+                                for="4_{{ question.0 }}"
+                            >
+                                {{ question.10 }} <br />
+                                {% if question.11 %}
+                                <img
+                                    src="/media/{{ question.11 }}"
+                                    alt="Option 4 Image"
+                                    class="img-fluid m-4"
+                                />
+                                {% endif %}
+                            </label>
+                        </div>
                     </div>
                 </div>
-                <div class="rounded p-2 my-2">
-                    <h5 class="card-title">{{ question.2 }}</h5>
-                    {% if question.3 %}
-                    <img
-                        src="/media/{{ question.3 }}"
-                        alt="Question Image"
-                        class="img-fluid m-4"
-                        width="200"
-                        height="150"
-                    />
-                    {% endif %}
+                {% endfor %}
+            </form>
+        </div>
+
+        <!-- Navigation Section -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Question Navigation</h5>
+                    <div class="d-flex row justify-content-between flex-wrap">
+                        {% for question in shuffled_questions %}
+                        <button
+                            type="button"
+                            class="nav-buttons btn btn-outline-primary m-1 col-2"
+                            id="btn_{{question.0}}"
+                            onclick="showQuestion({{ forloop.counter }})"
+                        >
+                            {{ forloop.counter }}
+                        </button>
+                        {% endfor %}
+                    </div>
                 </div>
-                <div class="form-check mx-4 border rounded p-1 my-2">
-                    <input
-                        class="form-check-input"
-                        type="radio"
-                        name="{{ forloop.counter }}"
-                        id="1_{{ question.0 }}"
-                        value="1"
-                    />
-                    <label
-                        class="form-check-label w-100"
-                        for="1_{{ question.0 }}"
-                        >{{ question.4 }} <br />
-                        {% if question.5 %}
-                        <img
-                            src="/media/{{ question.5 }}"
-                            alt="Option 1 Image"
-                            class="img-fluid m-4"
-                            width="200"
-                            height="150"
-                        />
-                        {% endif %}
-                    </label>
-                </div>
-                <div class="form-check mx-4 border rounded p-1 my-2">
-                    <input
-                        class="form-check-input"
-                        type="radio"
-                        name="{{ forloop.counter }}"
-                        id="2_{{ question.0 }}"
-                        value="2"
-                    />
-                    <label
-                        class="form-check-label w-100"
-                        for="2_{{ question.0 }}"
-                        >{{ question.6 }} <br />
-                        {% if question.7 %}
-                        <img
-                            src="/media/{{ question.7 }}"
-                            alt="Option 2 Image"
-                            class="img-fluid m-4"
-                            width="200"
-                            height="150"
-                        />
-                        {% endif %}
-                    </label>
-                </div>
-                <div class="form-check mx-4 border rounded p-1 my-2">
-                    <input
-                        class="form-check-input"
-                        type="radio"
-                        name="{{ forloop.counter }}"
-                        id="3_{{ question.0 }}"
-                        value="3"
-                    />
-                    <label
-                        class="form-check-label w-100"
-                        for="3_{{ question.0 }}"
-                        >{{ question.8 }} <br />
-                        {% if question.9 %}
-                        <img
-                            src="/media/{{ question.9 }}"
-                            alt="Option 3 Image"
-                            class="img-fluid m-4"
-                            width="200"
-                            height="150"
-                        />
-                        {% endif %}
-                    </label>
-                </div>
-                <div class="form-check mx-4 border rounded p-1 my-2">
-                    <input
-                        class="form-check-input"
-                        type="radio"
-                        name="{{ forloop.counter }}"
-                        id="4_{{ question.0 }}"
-                        value="4"
-                    />
-                    <label
-                        class="form-check-label w-100"
-                        for="4_{{ question.0 }}"
-                        >{{ question.10 }} <br />
-                        {% if question.11 %}
-                        <img
-                            src="/media/{{ question.11 }}"
-                            alt="Option 4 Image"
-                            class="img-fluid m-4"
-                            width="200"
-                            height="150"
-                        />
-                        {% endif %}
-                    </label>
-                </div>
-                <input
-                    type="hidden"
-                    name="question{{ forloop.counter }}"
-                    value="{{ question.0 }}"
-                />
             </div>
         </div>
-        {% endfor %}
-        <button id="submitTestButton" type="submit" class="btn btn-info btn-lg my-4">
+    </div>
+    <!-- Bottom bar -->
+    <div class="p-4 text-center">
+        <button
+            id="submitTestButton"
+            type="submit"
+            class="btn btn-info btn-lg w-100"
+        >
             Submit Test
         </button>
-    </form>
+    </div>
 
-    {% else %}
-    <p>Test details not found. Please try again later.</p>
-    {% endif %}
+    <h6 id="out-side-time"></h6>
+
+</div>
+<!-- Pop-up Bar -->
+<div class="modal bg-black zindex-sticky " id="pop-up" style="display: block;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Full screen</h5> 
+            </div>
+            <div class="modal-body">
+                <p>Click confirm to make full screen , test is already started.</p>
+            </div>
+            <div class="modal-footer">
+                <button
+                    id="full-screen-btn"
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Go to full Screen
+                </button> 
+            </div>
+        </div>
+    </div>
 </div>
 
+<!-- Pop-up Modal -->
+<div class="modal fade" id="warningModal" tabindex="-1" aria-labelledby="warningModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="warningModalLabel">Warning</h5> 
+            </div>
+            <div class="modal-body" id="warningModalBody">
+                <!-- Warning message will be inserted here -->
+            </div>
+            <div class 
+        </div>
+    </div>
+</div>
+
+<!-- <div style="width: 100vh;  height: 100vh; top: 0; left: 0; position: absolute; z-index: 10000;">Hi there</div> -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 <script>
-    function setSelectedOptions(selectedOptions, expirationTime) {
-        const now = new Date();
-        const expires = new Date(expirationTime);
-        const timeUntilExpires = expires.getTime() - now.getTime();
-        document.cookie = `selected_options=${selectedOptions.join('|')};expires=${expires.toUTCString()};`;
+    document.getElementById("full-screen-btn").addEventListener("click", () => { 
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+        } else if (document.documentElement.mozRequestFullScreen) {
+            // Firefox
+            document.documentElement.mozRequestFullScreen();
+        } else if (document.documentElement.webkitRequestFullscreen) {
+            // Chrome, Safari and Opera
+            document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) {
+            // IE/Edge
+            document.documentElement.msRequestFullscreen();
+        } 
+        document.getElementById("test-content").style.display = 'block';
+        document.getElementById("pop-up").style.display = 'none';
+    });
+
+    document.addEventListener("contextmenu", (event) => event.preventDefault());
+
+    document.addEventListener('keydown', function(event) {
+        event.preventDefault();
+    });
+
+    function showQuestion(questionNumber) {
+        const questions = document.querySelectorAll(".question");
+        questions.forEach((question, index) => {
+            question.style.display =
+                index + 1 === questionNumber ? "block" : "none";
+        });
     }
 
-    function getSelectedOptions() {
-        const cookies = document.cookie.split('; ');
-        for (const cookie of cookies) {
-            const [name, value] = cookie.split('=');
-            if (name === 'selected_options') {
-                return value.split('|');
-            }
-        }
-        return [];
-    }
-
-    const testEndTimeString = '{{ test_details.3 }}';
-    const testEndTime = new Date(testEndTimeString);
-    const testEndTimeUTCString = testEndTime.toUTCString();
-
-    
-    window.onload = function () {
+    window.onload = function () { 
         const url = window.location.href;
-        const expectedUrlPattern = '/student/session/{{session_id}}/test/{{test_id}}'; // Adjust the pattern as needed
+        const expectedUrlPattern =
+            "/student/session/{{session_id}}/test/{{test_id}}";
         if (url.includes(expectedUrlPattern)) {
-            const selectedOptions = getSelectedOptions();
+            const selectedOptions = getSelectedOptions(); 
+            console.log(selectedOptions);
             selectedOptions.forEach((selectedOption) => {
                 const radioButton = document.getElementById(selectedOption);
                 if (radioButton) {
                     radioButton.checked = true;
                 }
+                const qId = "btn_"+ selectedOption.split("_")[1]
+                const btn = document.getElementById(qId);
+                btn.className = "nav-buttons  btn btn-secondary  m-1 col-2"
             });
         }
+
+        function updateTimer() {
+            const now = new Date();
+            const distance = testEndTime - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor(
+                (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+            );
+            const minutes = Math.floor(
+                (distance % (1000 * 60 * 60)) / (1000 * 60)
+            );
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById(
+                "time"
+            ).innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+            if (distance < 0) {
+                clearInterval(x);
+                document.getElementById("time").innerText = "EXPIRED";
+            }
+        }
+        updateTimer();
+        const x = setInterval(updateTimer, 1000);
+
+        let warningCount = 0;
+        let devToolsCount = 0;
+        let outsideStartTime = null;
+        let totalOutsideTime = 0;
+
+        function sendWarning(message) {
+            warningCount++;
+            document.getElementById('warningModalBody').innerText = message;
+            const warningModal = new bootstrap.Modal(document.getElementById('warningModal'));
+            warningModal.show();
+            console.log(`Warning Count: ${warningCount}`);
+        }
+
+        function handleVisibilityChange() {
+            if (document.hidden) {
+                outsideStartTime = new Date();
+                sendWarning("You have switched tabs or minimized the window.");
+            } else {
+                if (outsideStartTime) {
+                    totalOutsideTime += Math.floor((new Date() - outsideStartTime) / 1000);
+                    outsideStartTime = null;
+                    console.log(`Total Outside Time: ${totalOutsideTime} seconds`);
+                }
+            }
+        }
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        window.addEventListener("blur", () => {
+            setTimeout(() => {
+                if (!document.hasFocus()) {
+                    outsideStartTime = new Date();
+                    sendWarning("You have switched tabs or minimized the window. So, your time counting for outside, so click the outside of this. Your previous outside window time: "+ totalOutsideTime);
+                }
+            }, 200);
+        });
+
+        window.addEventListener("focus", () => {
+            if (outsideStartTime) {
+                totalOutsideTime += Math.floor((new Date() - outsideStartTime) / 1000);
+                outsideStartTime = null;
+                console.log(`Total Outside Time: ${totalOutsideTime} seconds`);
+            }
+        });
+
+        function getFormattedTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const remainingSeconds = seconds % 60;
+
+            return `${hours}h ${minutes}m ${remainingSeconds}s`;
+        }
+
+        window.setInterval(() => {
+            console.log(`You have been outside the screen for a total of: ${getFormattedTime(totalOutsideTime)}`);
+            document.getElementById("out-side-time").innerHTML = `You have been outside the screen for a total of: ${getFormattedTime(totalOutsideTime)}`
+        }, 1000);
     };
 
-    document.querySelectorAll('.form-check-input').forEach((radioButton) => {
-        radioButton.addEventListener('click', function () {
-            const url = window.location.href;
-            const expectedUrlPattern = '/student/session/{{session_id}}/test/{{test_id}}'; 
-            if (url.includes(expectedUrlPattern)) {
-                const selectedOptions = [];
-                document.querySelectorAll('.form-check-input:checked').forEach((selected) => {
-                    selectedOptions.push(selected.id);
-                });
-                setSelectedOptions(selectedOptions, testEndTimeUTCString);
+    function setSelectedOptions(selectedOptions, expirationTime) {
+        const now = new Date();
+        const expires = new Date(expirationTime);
+        const timeUntilExpires = expires.getTime() - now.getTime();
+        document.cookie = `selected_options=${selectedOptions.join(
+            "|"
+        )};expires=${expires.toUTCString()};`;
+    }
+
+    function getSelectedOptions() {
+        const cookies = document.cookie.split("; ");
+        for (const cookie of cookies) {
+            const [name, value] = cookie.split("=");
+            if (name === "selected_options") {
+                return value.split("|");
             }
+        }
+        return [];
+    }
+
+    const testEndTimeString = "{{ test_details.3 }}";
+    const testEndTime = moment(
+        testEndTimeString,
+        "MMM Do, YYYY, h:mm a"
+    ).toDate();
+    const testEndTimeUTCString = testEndTime.toUTCString();
+    console.log(testEndTimeString, testEndTime, testEndTimeUTCString);
+
+    document.querySelectorAll(".form-check-input").forEach((radioButton) => {
+        radioButton.addEventListener("click", function () {
+            const selectedOptions = Array.from(
+                document.querySelectorAll(".form-check-input:checked")
+            ).map((input) => input.id);
+            setSelectedOptions(selectedOptions, testEndTimeUTCString);
         });
     });
 
     document.getElementById('submitTestButton').addEventListener('click', function(e) {
-        
         e.preventDefault();
         var selectedOptions = [];
         var questions = document.getElementsByClassName('question');
@@ -229,28 +424,87 @@
             selected_options: selectedOptions
         };
 
-        fetch('/student/session/{{session_id}}/test/{{test_id}}/response/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
-            },
-            body: JSON.stringify(data)
-        })
-        .then(function(response) {
-            if (response.ok) { 
-                console.log('Test response submitted successfully.');
-            } else { 
-                console.error('Error submitting test response.');
-            }
-        })
-        .catch(function(error) {
-            console.error('Error:', error);
-        });
+        // fetch('/student/session/{{session_id}}/test/{{test_id}}/response/', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //         'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
+        //     },
+        //     body: JSON.stringify(data)
+        // })
+        // .then(function(response) {
+        //     if (response.ok) { 
+        //         console.log('Test response submitted successfully.');
+        //     } else { 
+        //         console.error('Error submitting test response.');
+        //     }
+        // })
+        // .catch(function(error) {
+        //     console.error('Error:', error);
+        // });
     });
 
-</script>
 
+function closeModal() {
+    const modal = new bootstrap.Modal(document.getElementById("warningModal"));
+    modal.hide();
+}
+
+// Event listener for the close button
+document.getElementById("close-modal-btn").addEventListener("click", closeModal);
+
+// Event listener for the full screen button
+document.getElementById("full-screen-btn").addEventListener("click", () => {
+    if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+    } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+        document.documentElement.mozRequestFullScreen();
+    } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari, and Opera
+        document.documentElement.webkitRequestFullscreen();
+    } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+        document.documentElement.msRequestFullscreen();
+    }
+    closeModal();
+});
+
+// Function to show the warning modal
+function showWarningModal(message) {
+    document.getElementById("warningModalBody").innerText = message;
+    const modal = new bootstrap.Modal(document.getElementById("warningModal"));
+    modal.show();
+}
+
+// Event listener for beforeunload to show warning pop-up
+window.addEventListener("beforeunload", function(event) {
+    showWarningModal("You are about to leave this page. Your test progress might be lost.");
+    
+    // Prevent the default action of unloading the page
+    event.preventDefault();
+    event.returnValue = '';
+
+    // You can also run any additional code here if needed
+    // E.g., submitting test response or saving progress
+    // Uncomment and modify the fetch code below as needed
+    // fetch('/student/session/{{session_id}}/test/{{test_id}}/response/', {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //         'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
+    //     },
+    //     body: JSON.stringify(data)
+    // })
+    // .then(function(response) {
+    //     if (response.ok) {
+    //         console.log('Test response submitted successfully.');
+    //     } else {
+    //         console.error('Error submitting test response.');
+    //     }
+    // })
+    // .catch(function(error) {
+    //     console.error('Error:', error);
+    // });
+});
+</script>
 
 
 {% endblock %}

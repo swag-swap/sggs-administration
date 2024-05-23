@@ -1,9 +1,11 @@
 {% extends 'base2.html' %} {% block content %}
 
-<div class="container-fluid  " id="test-content" style="display: none;">
+<div class="vh-100 container-fluid row  col-md-12" id="test-content" style="display: none;">
+    <div class="row vh-100">
+        <div class="col-md-12 d-flex justify-content-evenly flex-column"> 
     <!-- Top content -->
     <div
-        class="p-4 d-flex flex-wrap justify-content-between align-items-center bg-light border-bottom"
+        class="p-4 d-flex flex-wrap justify-content-between align-items-center bg-light border-bottom row row-1 h-20"
     >
         <h1 class="">SGGS College of Engineering</h1>
         <h1 id="timer" class="p-2 badge badge-warning h1 text-nowrap">
@@ -12,7 +14,7 @@
     </div>
 
     <!-- Middle content -->
-    <div class="card mt-3 mb-3 ">
+    <div class="card mt-3 mb-3 row row-2 h-60">
         <div class="card-body">
             <h2>{{ test_details.0 }}</h2>
             <p><strong>Start Time:</strong> {{ test_details.2 }}</p>
@@ -22,9 +24,9 @@
     </div>
 
     <!-- Main Content -->
-    <div class="row">
+    <div class="row row-3 h-120" style="height: 50vh; overflow: scroll;">
         <!-- Questions Section -->
-        <div class="col-md-8 mb-3">
+        <div class="col-md-8 mb-3" style="height: 50vh; overflow: scroll;">
             <form id="testForm" class="">
                 {% csrf_token %} {% for question in shuffled_questions %}
                 <div
@@ -173,19 +175,21 @@
         </div>
     </div>
     <!-- Bottom bar -->
-    <div class="p-4 text-center">
+    <div class="p-4 text-center  row row-4 h-40 d-flex justify-content-end px-5">
         <button
             id="submitTestButton"
             type="submit"
-            class="btn btn-info btn-lg w-100"
+            class="btn btn-info btn-lg"
         >
             Submit Test
         </button>
     </div>
 
-    <h6 id="out-side-time"></h6>
-
 </div>
+</div>
+    
+</div>
+<h6 id="out-side-time"></h6>
 <!-- Pop-up Bar -->
 <div class="modal bg-black zindex-sticky " id="pop-up" style="display: block;">
     <div class="modal-dialog">
@@ -229,6 +233,16 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 <script>
+
+    
+    let total_time = 0
+    let warningCount = 0;
+    let devToolsCount = 0;
+    let outsideStartTime = null;
+    let totalOutsideTime = 0;
+
+
+    // Full Screen of window
     document.getElementById("full-screen-btn").addEventListener("click", () => { 
         if (document.documentElement.requestFullscreen) {
             document.documentElement.requestFullscreen();
@@ -246,8 +260,9 @@
         document.getElementById("pop-up").style.display = 'none';
     });
 
+    // Access to buttons are not given
+    document.addEventListener("keydown", (event) => event.preventDefault());
     document.addEventListener("contextmenu", (event) => event.preventDefault());
-
     document.addEventListener('keydown', function(event) {
         event.preventDefault();
     });
@@ -278,9 +293,12 @@
             });
         }
 
+
+
         function updateTimer() {
             const now = new Date();
-            const distance = testEndTime - now;
+            const distance = testEndTime - now; 
+            total_time++; 
 
             const days = Math.floor(distance / (1000 * 60 * 60 * 24));
             const hours = Math.floor(
@@ -302,11 +320,6 @@
         }
         updateTimer();
         const x = setInterval(updateTimer, 1000);
-
-        let warningCount = 0;
-        let devToolsCount = 0;
-        let outsideStartTime = null;
-        let totalOutsideTime = 0;
 
         function sendWarning(message) {
             warningCount++;
@@ -366,20 +379,24 @@
         const now = new Date();
         const expires = new Date(expirationTime);
         const timeUntilExpires = expires.getTime() - now.getTime();
-        document.cookie = `selected_options=${selectedOptions.join(
-            "|"
-        )};expires=${expires.toUTCString()};`;
+        // document.cookie = `selected_options=${selectedOptions.join( "|" )};expires=${expires.toUTCString()};`;
+        selectedOptions.forEach((option) => {
+            // console.log(option);
+            trueOption = option.split('_')[1]
+            // console.log(trueOption);
+            document.getElementById(`btn_${trueOption}`).className = "nav-buttons  btn btn-secondary  m-1 col-2"
+        })
+        localStorage.setItem('testProgress_{{session_id}}_{{test_id}}', `${selectedOptions.join( "|" )}`);
     }
 
     function getSelectedOptions() {
-        const cookies = document.cookie.split("; ");
-        for (const cookie of cookies) {
-            const [name, value] = cookie.split("=");
-            if (name === "selected_options") {
-                return value.split("|");
-            }
+        const cookies = localStorage.getItem('testProgress_{{session_id}}_{{test_id}}');
+        console.log(cookies);
+        if (cookies){
+            return cookies.split("|");
         }
-        return [];
+        else return [];
+         
     }
 
     const testEndTimeString = "{{ test_details.3 }}";
@@ -392,15 +409,17 @@
 
     document.querySelectorAll(".form-check-input").forEach((radioButton) => {
         radioButton.addEventListener("click", function () {
+            // if(radioButton.checked){
+            //     radioButton.checked = false;
+            // }
             const selectedOptions = Array.from(
                 document.querySelectorAll(".form-check-input:checked")
             ).map((input) => input.id);
-            setSelectedOptions(selectedOptions, testEndTimeUTCString);
+            setSelectedOptions(selectedOptions, testEndTimeUTCString); 
         });
     });
 
-    document.getElementById('submitTestButton').addEventListener('click', function(e) {
-        e.preventDefault();
+    async function submitTest() {
         var selectedOptions = [];
         var questions = document.getElementsByClassName('question');
 
@@ -413,97 +432,67 @@
                 var optionNumber = optionIdParts[0];
                 
                 selectedOptions.push({ question_id: questionId, selected_option: optionNumber });
-            }
-            else {
-                questionId = (questions[i].querySelector('input').id.split('_'))[1]
+            } else {
+                var questionId = (questions[i].querySelector('input').id.split('_'))[1];
                 selectedOptions.push({ question_id: questionId, selected_option: 0 });
             }
         }
-        console.log(selectedOptions);
-        var data = {
-            selected_options: selectedOptions
-        };
 
-        // fetch('/student/session/{{session_id}}/test/{{test_id}}/response/', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
-        //     },
-        //     body: JSON.stringify(data)
-        // })
-        // .then(function(response) {
-        //     if (response.ok) { 
-        //         console.log('Test response submitted successfully.');
-        //     } else { 
-        //         console.error('Error submitting test response.');
-        //     }
-        // })
-        // .catch(function(error) {
-        //     console.error('Error:', error);
-        // });
+        var data = {
+            selected_options: selectedOptions,
+            submission_time:  Date.now(),
+            total_time_taken: total_time,
+            total_off_screen_time: totalOutsideTime
+        };
+        console.log("Submitted");
+
+        try {
+            fetch('/student/session/{{session_id}}/test/{{test_id}}/response/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
+                },
+                body: JSON.stringify(data)
+            })
+            .then(function(response) {
+                if (response.ok) {
+                    console.log('Test response submitted successfully.');
+                    window.location.href = "/";
+                } else {
+                    console.error('Error submitting test response.');
+
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+            });
+
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    // Event listener for the Submit Test button
+    document.getElementById('submitTestButton').addEventListener('click', async function(e) {
+        console.log("Hiii");
+        e.preventDefault();
+        await submitTest();
+    });
+
+    // Warn the user before leaving the page
+    window.addEventListener("beforeunload", function(event) {
+        // saveTestProgress();
+        event.preventDefault();
+        event.returnValue = "Are you sure you want to leave? Test will be submitted!!!";
+    });
+
+    // Save test progress when the page is unloaded
+    window.addEventListener("unload", function() {
+        // submitTest();
     });
 
 
-function closeModal() {
-    const modal = new bootstrap.Modal(document.getElementById("warningModal"));
-    modal.hide();
-}
-
-// Event listener for the close button
-document.getElementById("close-modal-btn").addEventListener("click", closeModal);
-
-// Event listener for the full screen button
-document.getElementById("full-screen-btn").addEventListener("click", () => {
-    if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen();
-    } else if (document.documentElement.mozRequestFullScreen) { // Firefox
-        document.documentElement.mozRequestFullScreen();
-    } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari, and Opera
-        document.documentElement.webkitRequestFullscreen();
-    } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
-        document.documentElement.msRequestFullscreen();
-    }
-    closeModal();
-});
-
-// Function to show the warning modal
-function showWarningModal(message) {
-    document.getElementById("warningModalBody").innerText = message;
-    const modal = new bootstrap.Modal(document.getElementById("warningModal"));
-    modal.show();
-}
-
-// Event listener for beforeunload to show warning pop-up
-window.addEventListener("beforeunload", function(event) {
-    showWarningModal("You are about to leave this page. Your test progress might be lost.");
-    
-    // Prevent the default action of unloading the page
-    event.preventDefault();
-    event.returnValue = '';
-
-    // You can also run any additional code here if needed
-    // E.g., submitting test response or saving progress
-    // Uncomment and modify the fetch code below as needed
-    // fetch('/student/session/{{session_id}}/test/{{test_id}}/response/', {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //         'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
-    //     },
-    //     body: JSON.stringify(data)
-    // })
-    // .then(function(response) {
-    //     if (response.ok) {
-    //         console.log('Test response submitted successfully.');
-    //     } else {
-    //         console.error('Error submitting test response.');
-    //     }
-    // })
-    // .catch(function(error) {
-    //     console.error('Error:', error);
-    // });
-});
 </script>
 
 

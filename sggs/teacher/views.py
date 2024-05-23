@@ -13,6 +13,7 @@ from django.http import HttpResponse, JsonResponse
 from django.db import  connection, transaction
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from operator import itemgetter
 
 
 @login_required
@@ -574,19 +575,49 @@ def test_edit_questions(request, session_id, test_id):
             questions = cursor.fetchall()
         return render(request, 'teacher/test_edit_questions.html', {'is_teacher': True, 'user': request.user,'test_id': test_id, 'questions': questions})
     
-# @login_required
-# def test_result(request, session_id, test_id): 
-#     if request.user.is_teacher <= 0:
-#         return render(request, 'base/404.html') 
-     
-#     session = ClassSession.objects.get(id=session_id)  
-#     students = session.students.all()
-#     test_results = {}
-#     for student in students:
-#         try: 
-#             result = TestResult.objects.get(student=student, test=test) 
-#             test_results[student] = result
-#         except TestResult.DoesNotExist:
-#             # If the result doesn't exist, add a placeholder
-#             test_results[student] = None
 
+@login_required
+def test_result(request, session_id, test_id):
+    if not request.user.is_teacher:
+        return render(request, 'base/404.html')
+    
+    session = get_object_or_404(ClassSession, id=session_id)
+    students = session.students.all()
+    test_results = {}
+    
+    for student in students:
+        with connection.cursor() as cursor:
+            cursor.execute(f'''
+                SELECT mark_obtained, total_marks, submission_time, total_time_taken, total_off_screen_time, submitted
+                FROM {session.result_table_name}
+                WHERE test_id = %s AND student_id = %s
+            ''', [test_id, student.id])
+            result = cursor.fetchone()
+            if result:
+                test_results[student] = {
+                    'reg_no': student.reg_no,
+                    'name': student.user.first_name +" " + student.user.last_name ,
+                    'mark_obtained': int(result[0]),
+                    'total_marks': result[1],
+                    'submission_time': result[2],
+                    'total_time_taken': result[3],
+                    'total_off_screen_time': result[4],
+                    'submitted': result[5]
+                }
+            else:
+                test_results[student] = {
+                    'reg_no': student.reg_no,
+                    'name': student.user.first_name +" " + student.user.last_name ,
+                    'mark_obtained': 0,
+                    'total_marks': "Not Given",
+                    'submission_time': "Not Given",
+                    'total_off_screen_time': "Not Given",
+                    'submitted': "Not Given"
+                }
+
+    sorted_results = sorted(test_results.items(), key=lambda item: (item[1]['name'], -item[1]['mark_obtained']))
+    test_results = dict(sorted_results)
+
+
+
+    return render(request, 'teacher/test_result.html', {'is_teacher': True, 'user': request.user, 'session': session, 'test_results': test_results})

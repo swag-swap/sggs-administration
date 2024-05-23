@@ -1,60 +1,379 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
-<body>
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-6 mx-auto">
-                <h1 class="text-center mb-4">Welcome to SGGS College</h1>
-                {% if user.is_authenticated %}
-                    {% if user.is_student == 1 %}
-                        <a href="{% url 'student_home' %}" class="btn btn-primary btn-block">Student Dashboard</a>
-                    {% elif user.is_student == 0 %}
-                        <p class="text-center">Your request is being processed for Student role</p>
-                        <a href="{% url 'edit_student_detail' %}" class="btn btn-primary btn-block">Student Edit if not done</a>
-                    {% elif user.is_student == 2 %}
-                        <p class="text-center">Your request is being processed for Student role</p>
-                        <a href="{% url 'student_home' %}" class="btn btn-primary btn-block">You can go by previous Student profile </a> 
-                    {% endif %}
-                    {% if user.is_teacher == 1 %}
-                        <a href="{% url 'teacher_home' %}" class="btn btn-primary btn-block">Teacher Dashboard</a>
-                    {% elif user.is_teacher == 0 %}
-                        <p class="text-center">Your request is being processed for Teacher role</p>
-                        <a href="{% url 'edit_teacher_detail' %}" class="btn btn-primary btn-block">Teacher Edit if not done</a>
-                    {% elif user.is_teacher == 2 %}
-                        <p class="text-center">Your request is being processed for Teacher role</p>
-                        <a href="{% url 'teacher_home' %}" class="btn btn-primary btn-block">You can go by previous Teacher profile </a> 
-                    {% endif %}
-                    {% if user.is_administrator == 1 %}
-                        <a href="{% url 'admin_home' %}" class="btn btn-primary btn-block">Admin Dashboard</a>
-                    {% elif user.is_administrator == 0 %}
-                        <p class="text-center">Your request is being processed for administrator role</p>
-                        <a href="{% url 'edit_administrator_detail' %}" class="btn btn-primary btn-block">Administration Edit if not done</a>
-                    {% elif user.is_administrator == 2 %}
-                        <p class="text-center">Your request is being processed for Admin role</p>
-                        <a href="{% url 'admin_home' %}" class="btn btn-primary btn-block">You can go by previous Admin profile </a> 
-                    {% endif %}
 
-                    {% if user.is_librarian == 1 %}
-                        <a href="{% url 'library_home' %}" class="btn btn-primary btn-block">Librarian Dashboard</a>
-                    {% elif user.is_librarian == 0 %}
-                        <p class="text-center">Your request is being processed for librarian role</p>
-                        <a href="{% url 'edit_librarian_detail' %}" class="btn btn-primary btn-block">Librarian Edit if not done</a>
-                    {% elif user.is_librarian == 2 %}
-                        <p class="text-center">Your request is being processed for librarian role</p>
-                        <a href="{% url 'library_home' %}" class="btn btn-primary btn-block">You can go by previous librarian profile </a> 
-                    {% endif %}
-                {% else %}
-                    <a href="{% url 'register' %}" class="btn btn-success btn-block">Register</a>
-                    <a href="{% url 'login' %}" class="btn btn-primary btn-block">Login</a>
-                {% endif %}
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>SGGS College Administration</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+ 
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+
+  <!-- Template Main CSS File -->
+  <link href="{% static 'assets/css/style.css' %}" rel="stylesheet"> 
+</head>
+
+<body>
+
+  <!-- ======= Header ======= -->
+  <header id="header" class="fixed-top d-flex align-items-center">
+    <div class="container d-flex align-items-center">
+
+      <div class="logo me-auto">
+        <h1><a href="index.html">SGGS</a></h1>
+      </div>
+
+      <nav id="navbar" class="navbar order-last order-lg-0">
+        <ul>
+          <li><a class="nav-link scrollto active" href="#hero">Home</a></li>
+          <li><a class="nav-link scrollto" href="#contact">Contact</a></li>
+          {% if not user.is_authenticated  %}
+            <a href="{% url 'register' %}" class="nav-link scrollto">Register</a> 
+            <a href="{% url 'login' %}" class="nav-link scrollto">Login</a>
+            {% else %} 
+            <a href="{% url 'logout' %}" class="nav-link scrollto">Logout</a> 
+          {% endif %}
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav><!-- .navbar -->
+
+      <div class="header-social-links d-flex align-items-center">
+        <a href="https://twitter.com/sggsietnanded?lang=en" class="twitter"><i class="bi bi-twitter"></i></a>
+        <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
+        <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
+        <a href="#" class="linkedin"><i class="bi bi-linkedin"></i></a>
+      </div>
+
+    </div>
+  </header><!-- End Header -->
+
+  <!-- ======= Hero Section ======= -->
+  <section id="hero">
+
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6 pt-5 pt-lg-0 order-2 order-lg-1 d-flex flex-column justify-content-center" data-aos="fade-up">
+          <div>
+            <h1>Empowering Students for a Brighter Future</h1>
+            <h2>SGGS College offers a wide range of courses and facilities to ensure quality education.</h2> 
+            <div class="flex flex-wrap justify-content-around">
+
+        {% if user.is_authenticated %}
+                {% if user.is_student == 1 %}
+                <a href="{% url 'student_home' %}" class="btn-get-started scrollto m-2">Student Dashboard</a>
+              {% elif user.is_student == 0 %}
+                <p class="text-center">Your request is being processed for Student role</p>
+                <a href="{% url 'edit_student_detail' %}" class="btn btn-get-started scrollto m-2">Edit Student Details</a>
+              {% elif user.is_student == 2 %}
+                <p class="text-center">Your request is being processed for Student role</p>
+                <a href="{% url 'student_home' %}" class="btn-get-started scrollto m-2">Go to Previous Student Profile</a>
+              {% endif %}
+              {% if user.is_teacher == 1 %}
+                <a href="{% url 'teacher_home' %}" class="btn-get-started scrollto m-2">Teacher Dashboard</a>
+              {% elif user.is_teacher == 0 %}
+                <p class="text-center">Your request is being processed for Teacher role</p>
+                <a href="{% url 'edit_teacher_detail' %}" class="btn-get-started scrollto m-2">Edit Teacher Details</a>
+              {% elif user.is_teacher == 2 %}
+                <p class="text-center">Your request is being processed for Teacher role</p>
+                <a href="{% url 'teacher_home' %}" class="btn-get-started scrollto m-2">Go to Previous Teacher Profile</a>
+              {% endif %}
+              {% if user.is_administrator == 1 %}
+                <a href="{% url 'admin_home' %}" class="btn-get-started scrollto m-2">Admin Dashboard</a>
+              {% elif user.is_administrator == 0 %}
+                <p class="text-center">Your request is being processed for Administrator role</p>
+                <a href="{% url 'edit_administrator_detail' %}" class="btn-get-started scrollto m-2">Edit Administrator Details</a>
+              {% elif user.is_administrator == 2 %}
+                <p class="text-center">Your request is being processed for Admin role</p>
+                <a href="{% url 'admin_home' %}" class="btn-get-started scrollto m-2">Go to Previous Admin Profile</a>
+              {% endif %}
+              {% if user.is_librarian == 1 %}
+                <a href="{% url 'library_home' %}" class="btn-get-started scrollto">Librarian Dashboard</a>
+              {% elif user.is_librarian == 0 %}
+                <p class="text-center">Your request is being processed for Librarian role</p>
+                <a href="{% url 'edit_librarian_detail' %}" class="btn-get-started scrollto m-2">Edit Librarian Details</a>
+              {% elif user.is_librarian == 2 %}
+                <p class="text-center">Your request is being processed for Librarian role</p>
+                <a href="{% url 'library_home' %}" class="btn-get-started scrollto m-2">Go to Previous Librarian Profile</a>
+              {% endif %}
+
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 order-1 order-lg-2 hero-img" data-aos="fade-left">
+          <img src="{% static 'assets/img/hero-img.png' %}" class="img-fluid" alt="">
+        </div>
+      </div>
+    </div>
+
+  </section><!-- End Hero -->
+
+
+  <!-- ======= Main Content ======= -->
+  <main id="main">
+      <!-- ======= Button Section ======= -->
+      <section id="button-section" class="button-section py-5" data-aos="fade-top">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-md-6">
+            <h1 class="text-center mb-4">Welcome to SGGS College</h1>
             </div>
         </div>
     </div>
+    </section><!-- End Button Section -->
+
+  <main id="main">
+
+    <!-- ======= About Section ======= -->
+    <section id="about" class="about">
+      <div class="container">
+
+        <div class="row">
+          <div class="col-lg-6" data-aos="zoom-in">
+            <img src="{% static 'assets/img/about.jpg' %}" class="img-fluid" alt="">
+          </div>
+          <div class="col-lg-6 d-flex flex-column justify-contents-center" data-aos="fade-left">
+            <div class="content pt-4 pt-lg-0">
+              <h3>Learn more about us</h3>
+              <p class="fst-italic">
+                SGGS College is dedicated to providing top-notch education and facilities to help students achieve their dreams.
+              </p>
+              <ul>
+                <li><i class="bi bi-check-circle"></i> Experienced faculty and comprehensive curriculum.</li>
+                <li><i class="bi bi-check-circle"></i> State-of-the-art infrastructure and labs.</li>
+                <li><i class="bi bi-check-circle"></i> Extensive extracurricular activities and support services.</li>
+              </ul>
+              <p>
+                We strive to foster an environment that encourages learning and personal growth for all students.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section><!-- End About Section -->
+
+    <!-- ======= Features Section ======= -->
+    <section id="features" class="features">
+      <div class="container">
+
+        <div class="row">
+          <div class="col-lg-6 mt-2 mb-tg-0 order-2 order-lg-1">
+            <ul class="nav nav-tabs flex-column">
+              <li class="nav-item" data-aos="fade-up">
+                <a class="nav-link active show" data-bs-toggle="tab" href="#tab-1">
+                  <h4>Quality Education</h4>
+                  <p>Our commitment to excellence in education is reflected in our curriculum and faculty.</p>
+                </a>
+              </li>
+              <li class="nav-item mt-2" data-aos="fade-up" data-aos-delay="100">
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-2">
+                  <h4>Advanced Facilities</h4>
+                  <p>We provide state-of-the-art infrastructure to support our students' learning.</p>
+                </a>
+              </li>
+              <li class="nav-item mt-2" data-aos="fade-up" data-aos-delay="200">
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-3">
+                  <h4>Student Support</h4>
+                  <p>Our comprehensive support services ensure student well-being and success.</p>
+                </a>
+              </li>
+              <li class="nav-item mt-2" data-aos="fade-up" data-aos-delay="300">
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-4">
+                  <h4>Extracurricular Activities</h4>
+                  <p>We offer a wide range of activities to help students develop holistically.</p>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div class="col-lg-6 order-1 order-lg-2" data-aos="zoom-in">
+            <div class="tab-content">
+              <div class="tab-pane active show" id="tab-1">
+                <figure>
+                  <img src="{% static 'assets/img/features-1.png' %}" alt="" class="img-fluid">
+                </figure>
+              </div>
+              <div class="tab-pane" id="tab-2">
+                <figure>
+                  <img src="{% static 'assets/img/features-2.png' %}" alt="" class="img-fluid">
+                </figure>
+              </div>
+              <div class="tab-pane" id="tab-3">
+                <figure>
+                  <img src="{% static 'assets/img/features-3.png' %}" alt="" class="img-fluid">
+                </figure>
+              </div>
+              <div class="tab-pane" id="tab-4">
+                <figure>
+                  <img src="{% static 'assets/img/features-4.png' %}" alt="" class="img-fluid">
+                </figure>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section><!-- End Features Section -->
+
+    <!-- ======= CTA Section ======= -->
+    <section id="cta" class="cta">
+      <div class="container">
+
+        <div class="row" data-aos="zoom-in">
+          <div class="col-lg-9 text-center text-lg-start">
+            <h3>Contact Us</h3>
+            <p> Reach out to us for any inquiries, support, or information. We're here to help you!</p>
+          </div>
+          <div class="col-lg-3 cta-btn-container text-center">
+            <a class="cta-btn align-middle" href="#contact">Get In Touch</a>
+          </div>
+        </div>
+
+      </div>
+    </section><!-- End CTA Section -->
+
+    <!-- ======= Contact Section ======= -->
+    <section id="contact" class="contact">
+      <div class="container">
+
+        <div class="row justify-content-center" data-aos="fade-up" data-aos-delay="400">
+
+            <div class="col-lg-6 ">
+              <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3769.8989338414244!2d77.2896565252063!3d19.112089182099897!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bce29f0b2e43199%3A0xe11b84ac3144b2b4!2sSGGS%2C%20Vishnupuri%2C%20Nanded%2C%20Maharashtra%20431606!5e0!3m2!1sen!2sin!4v1716455245074!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+  
+          </div>
+
+        <div class="section-title">
+          <h2>Contact Us</h2>
+          <p>Get in touch with us for any inquiries, support, or information. We're here to help you!</p>
+        </div>
+
+        
+        <div class="row">
+
+          <div class="col-lg-6" data-aos="fade-up">
+            <div class="info-box mb-4">
+              <i class="bi bi-geo-alt"></i>
+              <h3>Our Address</h3>
+              <p>Vishnupuri, Nanded, Maharashtra 431606</p>
+            </div>
+          </div>
+
+          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
+            <div class="info-box  mb-4">
+              <i class="bi bi-envelope"></i>
+              <h3>Email Us</h3>
+              <p> registrar@sggs.ac.in</p>
+            </div>
+          </div>
+
+          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200">
+            <div class="info-box  mb-4">
+              <i class="bi bi-phone"></i>
+              <h3>Call Us</h3>
+              <p>+91-2462-269161</p>
+            </div>
+          </div>
+
+          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="300">
+            <div class="info-box  mb-4">
+              <i class="bi bi-clock"></i>
+              <h3>Working Hours</h3>
+              <p>Mon - Fri: 9AM - 5PM</p>
+            </div>
+          </div>
+
+        </div>
+
+
+      </div>
+    </section><!-- End Contact Section -->
+
+  </main><!-- End #main -->
+
+  <!-- ======= Footer ======= -->
+  <footer id="footer">
+    <div class="footer-top">
+      <div class="container">
+        <div class="row">
+
+          <div class="col-lg-3 col-md-6 footer-contact">
+            <h3>SGGS College</h3>
+            <p>
+                Vishnupuri, <br>
+                Nanded, Maharashtra 431606<br><br>
+              <strong>Phone:</strong>+91-2462-269161<br>
+              <strong>Email:</strong> registrar@sggs.ac.in<br>
+            </p>
+          </div>
+
+          <div class="col-lg-2 col-md-6 footer-links">
+            <h4>Useful Links</h4>
+            <ul>
+              <li><i class="bx bx-chevron-right"></i> <a href="#">Home</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a href="https://www.sggs.ac.in/home/page/ABOUT-SGGS">About us</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a href="https://www.sggs.ac.in/home/page/Vision-and-Mission">Vision and mission</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a href="https://www.sggs.ac.in/home/page/History-of-the-Institute">History</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a href="https://www.sggs.ac.in/home/page/How-to-reach-Nanded">How to reach Nanded</a></li>
+            </ul>
+          </div>
+
+          <div class="col-lg-3 col-md-6 footer-links"> 
+            <ul>
+              <li><i class="bx bx-chevron-right"></i> <a href="https://www.sggs.ac.in/home/page/Contact-Us">Contact us</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a href="https://www.sggs.ac.in/home/page/Fee-Structure">Fee Structure</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a href="https://www.sggs.ac.in/home/page/training-and-placement-">T & P</a></li>
+            </ul>
+          </div>
+ 
+
+        </div>
+      </div>
+    </div>
+
+    <div class="container d-md-flex py-4">
+
+      <div class="me-md-auto text-center text-md-start">
+        <div class="copyright">
+          &copy; Copyright <strong><span>SGGS College</span></strong>. All Rights Reserved
+        </div> 
+      </div>
+      <div class="social-links text-center text-md-right pt-3 pt-md-0">
+        <a href="https://twitter.com/sggsietnanded?lang=en" class="twitter"><i class="bi bi-twitter"></i></a>
+        <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
+        <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
+        <a href="#" class="linkedin"><i class="bi bi-linkedin"></i></a>
+      </div>
+    </div>
+  </footer><!-- End Footer -->
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/isotope-layout/isotope.pkgd.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
+
+  <!-- Template Main JS File -->
+  <script src="{% static 'assets/js/main.js' %}"></script>
+
 </body>
+
 </html>

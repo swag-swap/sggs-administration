@@ -1,33 +1,32 @@
 {% extends 'base2.html' %} {% block content %}
 
-<!-- <div style="overflow: hidden;">
-
-</div> -->
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center">
-        <h1>Test Details</h1>
-        <div id="timer" class="badge badge-warning h4">
+<div class="container-fluid  " id="test-content" style="display: none;">
+    <!-- Top content -->
+    <div
+        class="p-4 d-flex flex-wrap justify-content-between align-items-center bg-light border-bottom"
+    >
+        <h1 class="">SGGS College of Engineering</h1>
+        <h1 id="timer" class="p-2 badge badge-warning h1 text-nowrap">
             Time Left: <span id="time"></span>
-        </div>
+        </h1>
     </div>
-    <hr />
 
-    {% if test_details %}
-    <div class="card mb-3">
+    <!-- Middle content -->
+    <div class="card mt-3 mb-3 ">
         <div class="card-body">
             <h2>{{ test_details.0 }}</h2>
-            <p><strong>Description:</strong> {{ test_details.1 }}</p>
             <p><strong>Start Time:</strong> {{ test_details.2 }}</p>
             <p><strong>End Time:</strong> {{ test_details.3 }}</p>
             <p><strong>Number of Questions:</strong> {{ test_details.4 }}</p>
         </div>
     </div>
 
-    <form id="testForm">
-        {% csrf_token %}
-        <div class="row">
-            <div class="col-md-8">
-                {% for question in shuffled_questions %}
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Questions Section -->
+        <div class="col-md-8 mb-3">
+            <form id="testForm" class="">
+                {% csrf_token %} {% for question in shuffled_questions %}
                 <div
                     class="card mt-3 question"
                     id="question_{{ forloop.counter }}"
@@ -149,128 +148,114 @@
                     </div>
                 </div>
                 {% endfor %}
-            </div>
-            <div class="col-md-4">
-                <div class="sticky-top">
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <h5 class="card-title">Question Navigation</h5>
-                            <div class="d-flex flex-wrap">
-                                {% for question in shuffled_questions %}
-                                <button
-                                    type="button"
-                                    class="btn btn-outline-primary m-1"
-                                    onclick="showQuestion({{ forloop.counter }})"
-                                >
-                                    {{ forloop.counter }}
-                                </button>
-                                {% endfor %}
-                            </div>
-                        </div>
+            </form>
+        </div>
+
+        <!-- Navigation Section -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Question Navigation</h5>
+                    <div class="d-flex row justify-content-between flex-wrap">
+                        {% for question in shuffled_questions %}
+                        <button
+                            type="button"
+                            class="nav-buttons btn btn-outline-primary m-1 col-2"
+                            id="btn_{{question.0}}"
+                            onclick="showQuestion({{ forloop.counter }})"
+                        >
+                            {{ forloop.counter }}
+                        </button>
+                        {% endfor %}
                     </div>
-                    <button
-                        id="submitTestButton"
-                        type="submit"
-                        class="btn btn-info btn-lg w-100"
-                    >
-                        Submit Test
-                    </button>
-                </div>
-            </div>
-        </div>
-    </form>
-
-    <button
-        id="confirmButton"
-        type="button"
-        class="btn btn-primary btn-lg"
-        data-bs-toggle="modal"
-        data-bs-target="#fullscreenModal"
-    >
-        Click to Confirm
-    </button>
-
-    <div
-        class="modal fade w-100 aboso"
-        id="fullscreenModal"
-        tabindex="-1"
-        aria-labelledby="fullscreenModalLabel"
-        aria-hidden="true"
-    >
-        <div class="modal-dialog modal-fullscreen">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="fullscreenModalLabel">
-                        Confirmation
-                    </h5>
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Close"
-                    ></button>
-                </div>
-                <div class="modal-body">
-                    <p>This is the confirmation text.</p>
                 </div>
             </div>
         </div>
     </div>
- {% else %}
-    <p>Test details not found. Please try again later.</p>
-    {% endif %}
+    <!-- Bottom bar -->
+    <div class="p-4 text-center">
+        <button
+            id="submitTestButton"
+            type="submit"
+            class="btn btn-info btn-lg w-100"
+        >
+            Submit Test
+        </button>
+    </div>
+
+    <h6 id="out-side-time"></h6>
+
 </div>
-<div class="card h-100 y-start" style="z-index: 20; top: 0; left: 0 ;">
-    <div class="card top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center">
-      <button id="confirmButton" type="button" class="btn btn-primary btn-lg">Click to Confirm</button>
-      <p class="card-text text-center mt-3">This is the confirmation text.</p>
+<!-- Pop-up Bar -->
+<div class="modal bg-black zindex-sticky " id="pop-up" style="display: block;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Full screen</h5> 
+            </div>
+            <div class="modal-body">
+                <p>Click confirm to make full screen , test is already started.</p>
+            </div>
+            <div class="modal-footer">
+                <button
+                    id="full-screen-btn"
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Go to full Screen
+                </button> 
+            </div>
+        </div>
     </div>
 </div>
-<div style="width: 100vh;  height: 100vh; top: 0; left: 0; position: absolute; z-index: 10000;">Hi there</div>
+
+<!-- Pop-up Modal -->
+<div class="modal fade" id="warningModal" tabindex="-1" aria-labelledby="warningModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="warningModalLabel">Warning</h5> 
+            </div>
+            <div class="modal-body" id="warningModalBody">
+                <!-- Warning message will be inserted here -->
+            </div>
+            <div class 
+        </div>
+    </div>
+</div>
+
+<!-- <div style="width: 100vh;  height: 100vh; top: 0; left: 0; position: absolute; z-index: 10000;">Hi there</div> -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-
 <script>
-    document.getElementById("confirmButton").addEventListener("click", () => {
-        if (window.confirm("Go to fullscreen!!!")) {
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen();
-            } else if (document.documentElement.mozRequestFullScreen) {
-                // Firefox
-                document.documentElement.mozRequestFullScreen();
-            } else if (document.documentElement.webkitRequestFullscreen) {
-                // Chrome, Safari and Opera
-                document.documentElement.webkitRequestFullscreen();
-            } else if (document.documentElement.msRequestFullscreen) {
-                // IE/Edge
-                document.documentElement.msRequestFullscreen();
-            }
-        }
+
+
+
+    // Full Screen of window
+    document.getElementById("full-screen-btn").addEventListener("click", () => { 
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+        } else if (document.documentElement.mozRequestFullScreen) {
+            // Firefox
+            document.documentElement.mozRequestFullScreen();
+        } else if (document.documentElement.webkitRequestFullscreen) {
+            // Chrome, Safari and Opera
+            document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) {
+            // IE/Edge
+            document.documentElement.msRequestFullscreen();
+        } 
+        document.getElementById("test-content").style.display = 'block';
+        document.getElementById("pop-up").style.display = 'none';
     });
 
-    // document.addEventListener("contextmenu", (event) => event.preventDefault());
-
-    // document.onkeydown = function (e) {
-    //     // disable F12 key
-    //     if (e.keyCode == 123) {
-    //         return false;
-    //     }
-
-    //     // disable I key
-    //     if (e.ctrlKey && e.shiftKey && e.keyCode == 73) {
-    //         return false;
-    //     }
-
-    //     // disable J key
-    //     if (e.ctrlKey && e.shiftKey && e.keyCode == 74) {
-    //         return false;
-    //     }
-
-    //     // disable U key
-    //     if (e.ctrlKey && e.keyCode == 85) {
-    //         return false;
-    //     }
-    // };
+    // Access to buttons are not given
+    document.addEventListener("keydown", (event) => event.preventDefault());
+    document.addEventListener("contextmenu", (event) => event.preventDefault());
+    document.addEventListener('keydown', function(event) {
+        event.preventDefault();
+    });
 
     function showQuestion(questionNumber) {
         const questions = document.querySelectorAll(".question");
@@ -280,30 +265,29 @@
         });
     }
 
-    window.onload = function () {
-        // Show the first question by default
-        showQuestion(1);
-
+    window.onload = function () { 
         const url = window.location.href;
         const expectedUrlPattern =
             "/student/session/{{session_id}}/test/{{test_id}}";
         if (url.includes(expectedUrlPattern)) {
-            const selectedOptions = getSelectedOptions();
-            selectedOptions.forEach((selectedOption) => {
-                const radioButton = document.getElementById(selectedOption);
-                if (radioButton) {
-                    radioButton.checked = true;
-                }
-            });
+            // const selectedOptions = getSelectedOptions(); 
+            // console.log(selectedOptions);
+            // selectedOptions.forEach((selectedOption) => {
+            //     const radioButton = document.getElementById(selectedOption);
+            //     if (radioButton) {
+            //         radioButton.checked = true;
+            //     }
+            //     const qId = "btn_"+ selectedOption.split("_")[1]
+            //     const btn = document.getElementById(qId);
+            //     btn.className = "nav-buttons  btn btn-secondary  m-1 col-2"
+            // });
         }
 
-        // Timer Functionality
         function updateTimer() {
             const now = new Date();
             const distance = testEndTime - now;
 
             const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-
             const hours = Math.floor(
                 (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
             );
@@ -324,63 +308,84 @@
         updateTimer();
         const x = setInterval(updateTimer, 1000);
 
-        // Warning and tracking for tab changes and developer tools
         let warningCount = 0;
         let devToolsCount = 0;
+        let outsideStartTime = null;
+        let totalOutsideTime = 0;
 
         function sendWarning(message) {
             warningCount++;
-            alert(message);
+            document.getElementById('warningModalBody').innerText = message;
+            const warningModal = new bootstrap.Modal(document.getElementById('warningModal'));
+            warningModal.show();
             console.log(`Warning Count: ${warningCount}`);
         }
 
         function handleVisibilityChange() {
             if (document.hidden) {
+                outsideStartTime = new Date();
                 sendWarning("You have switched tabs or minimized the window.");
+            } else {
+                if (outsideStartTime) {
+                    totalOutsideTime += Math.floor((new Date() - outsideStartTime) / 1000);
+                    outsideStartTime = null;
+                    console.log(`Total Outside Time: ${totalOutsideTime} seconds`);
+                }
             }
         }
 
         document.addEventListener("visibilitychange", handleVisibilityChange);
 
-        // window.addEventListener("blur", () => {
-        //     setTimeout(() => {
-        //         if (!document.hasFocus()) {
-        //             sendWarning(
-        //                 "You have switched tabs or minimized the window."
-        //             );
-        //         }
-        //     }, 200);
-        // });
+        window.addEventListener("blur", () => {
+            setTimeout(() => {
+                if (!document.hasFocus()) {
+                    outsideStartTime = new Date();
+                    sendWarning("You have switched tabs or minimized the window. So, your time counting for outside, so click the outside of this. Your previous outside window time: "+ totalOutsideTime);
+                }
+            }, 200);
+        });
 
-        // Detect Developer Tools
-        // let devtools = /./;
-        // devtools.toString = function() {
-        //     devToolsCount++;
-        //     sendWarning('Developer tools opened!');
-        //     console.log(`Developer Tools Count: ${devToolsCount}`);
-        // };
-        // console.log('%c', devtools);
+        window.addEventListener("focus", () => {
+            if (outsideStartTime) {
+                totalOutsideTime += Math.floor((new Date() - outsideStartTime) / 1000);
+                outsideStartTime = null;
+                console.log(`Total Outside Time: ${totalOutsideTime} seconds`);
+            }
+        });
+
+        function getFormattedTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const remainingSeconds = seconds % 60;
+
+            return `${hours}h ${minutes}m ${remainingSeconds}s`;
+        }
+
+        window.setInterval(() => {
+            console.log(`You have been outside the screen for a total of: ${getFormattedTime(totalOutsideTime)}`);
+            document.getElementById("out-side-time").innerHTML = `You have been outside the screen for a total of: ${getFormattedTime(totalOutsideTime)}`
+        }, 1000);
     };
 
-    function setSelectedOptions(selectedOptions, expirationTime) {
-        const now = new Date();
-        const expires = new Date(expirationTime);
-        const timeUntilExpires = expires.getTime() - now.getTime();
-        document.cookie = `selected_options=${selectedOptions.join(
-            "|"
-        )};expires=${expires.toUTCString()};`;
-    }
+    // function setSelectedOptions(selectedOptions, expirationTime) {
+    //     const now = new Date();
+    //     const expires = new Date(expirationTime);
+    //     const timeUntilExpires = expires.getTime() - now.getTime();
+    //     document.cookie = `selected_options=${selectedOptions.join(
+    //         "|"
+    //     )};expires=${expires.toUTCString()};`;
+    // }
 
-    function getSelectedOptions() {
-        const cookies = document.cookie.split("; ");
-        for (const cookie of cookies) {
-            const [name, value] = cookie.split("=");
-            if (name === "selected_options") {
-                return value.split("|");
-            }
-        }
-        return [];
-    }
+    // function getSelectedOptions() {
+    //     const cookies = document.cookie.split("; ");
+    //     for (const cookie of cookies) {
+    //         const [name, value] = cookie.split("=");
+    //         if (name === "selected_options") {
+    //             return value.split("|");
+    //         }
+    //     }
+    //     return [];
+    // }
 
     const testEndTimeString = "{{ test_details.3 }}";
     const testEndTime = moment(
@@ -395,51 +400,130 @@
             const selectedOptions = Array.from(
                 document.querySelectorAll(".form-check-input:checked")
             ).map((input) => input.id);
-            setSelectedOptions(selectedOptions, testEndTimeUTCString);
+            // setSelectedOptions(selectedOptions, testEndTimeUTCString);
         });
     });
 
-    document
-        .getElementById("submitTestButton")
-        .addEventListener("click", function (event) {
-            event.preventDefault();
+    async function submitTest() {
+        var selectedOptions = [];
+        var questions = document.getElementsByClassName('question');
 
-            const selectedOptions = Array.from(
-                document.querySelectorAll(".form-check-input:checked")
-            ).map((input) => input.id);
-            // if (selectedOptions.length !== {{ shuffled_questions|length }}) {
-            //     alert('Please answer all questions before submitting the test.');
-            //     return;
-            // }
+        for (var i = 0; i < questions.length; i++) {
+            var selectedOption = questions[i].querySelector('input:checked');
+            
+            if (selectedOption) {
+                var optionIdParts = selectedOption.id.split('_');
+                var questionId = optionIdParts[1];
+                var optionNumber = optionIdParts[0];
+                
+                selectedOptions.push({ question_id: questionId, selected_option: optionNumber });
+            } else {
+                var questionId = (questions[i].querySelector('input').id.split('_'))[1];
+                selectedOptions.push({ question_id: questionId, selected_option: 0 });
+            }
+        }
 
-            var data = {
-                selected_options: selectedOptions,
-            };
+        var data = {
+            selected_options: selectedOptions
+        };
 
-            fetch(
-                "/student/session/{{session_id}}/test/{{test_id}}/response/",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRFToken": document.getElementsByName(
-                            "csrfmiddlewaretoken"
-                        )[0].value,
-                    },
-                    body: JSON.stringify(data),
+        try {
+            const response = await fetch('/student/session/{{session_id}}/test/{{test_id}}/response/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                console.log('Test response submitted successfully.');
+                // Clear local storage after successful submission
+                localStorage.removeItem('testProgress');
+            } else {
+                console.error('Error submitting test response.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function saveTestProgress() {
+        var selectedOptions = [];
+        var questions = document.getElementsByClassName('question');
+
+        for (var i = 0; i < questions.length; i++) {
+            var selectedOption = questions[i].querySelector('input:checked');
+            
+            if (selectedOption) {
+                var optionIdParts = selectedOption.id.split('_');
+                var questionId = optionIdParts[1];
+                var optionNumber = optionIdParts[0];
+                
+                selectedOptions.push({ question_id: questionId, selected_option: optionNumber });
+            } else {
+                var questionId = (questions[i].querySelector('input').id.split('_'))[1];
+                selectedOptions.push({ question_id: questionId, selected_option: 0 });
+            }
+        }
+
+        var data = {
+            selected_options: selectedOptions
+        };
+
+        // Save progress in local storage
+        localStorage.setItem('testProgress_{{session_id}}_{{test_id}}', JSON.stringify(data));
+    }
+
+    function loadTestProgress() {
+        var data = localStorage.getItem('testProgress');
+        if (data) {
+            // Submit the saved test progress
+            fetch('/student/session/{{session_id}}/test/{{test_id}}/response/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
+                },
+                body: data
+            })
+            .then(function(response) {
+                if (response.ok) {
+                    console.log('Saved test progress submitted successfully.');
+                    // Clear local storage after successful submission
+                    localStorage.removeItem('testProgress');
+                } else {
+                    console.error('Error submitting saved test progress.');
                 }
-            )
-                .then(function (response) {
-                    if (response.ok) {
-                        console.log("Test response submitted successfully.");
-                    } else {
-                        console.error("Error submitting test response.");
-                    }
-                })
-                .catch(function (error) {
-                    console.error("Error:", error);
-                });
-        });
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+            });
+        }
+    }
+
+    // Event listener for the Submit Test button
+    document.getElementById('submitTestButton').addEventListener('click', async function(e) {
+        console.log("Hiii");
+        e.preventDefault();
+        await submitTest();
+    });
+
+    // Warn the user before leaving the page
+    window.addEventListener("beforeunload", function(event) {
+        saveTestProgress();
+        event.preventDefault();
+        event.returnValue = "Are you sure you want to leave? Test will be submitted!!!";
+    });
+
+    // Save test progress when the page is unloaded
+    window.addEventListener("unload", function() {
+        saveTestProgress();
+    });
+
+
 </script>
+
 
 {% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container w-100 mt-5 table-responsive">
+    <h1>Test Results for {{ session.name }}</h1>
+    <table class="table ">
+        <thead class="thead-dark">
+            <tr>
+                <th>Reg_no</th>
+                <th>Name</th>
+                <th>Mark Obtained</th>
+                <th>Total Marks</th>
+                <th>Submission Time</th>
+                <th>Total Time Taken (secs)</th>
+                <th>Total Off Screen Time  (secs)</th>
+                <th>Submitted</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student, result in test_results.items %}
+                <tr>
+                    {% if result %}
+                        <td>{{ result.reg_no }}</td>
+                        <td>{{ result.name }}</td>
+                        <td>{{ result.mark_obtained }}</td>
+                        <td>{{ result.total_marks }}</td>
+                        <td>{{ result.submission_time }}</td>
+                        <td>{{ result.total_time_taken }}</td>
+                        <td>{{ result.total_off_screen_time }}</td>
+                        <td>{{ result.submitted }}</td>
+                    {% else %}
+                        <td colspan="6">No data available</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

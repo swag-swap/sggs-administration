@@ -337,6 +337,9 @@ def submit_test_response(request, session_id, test_id):
         data = json.loads(request.body)
         
         selected_options = data.get('selected_options', []) 
+        submission_time = data.get('submission_time')
+        total_time_taken = data.get('total_time_taken')
+        total_off_screen_time = data.get('total_off_screen_time')
         total_marks = 0
         mark_obtained = 0
         for selected_option in selected_options:
@@ -355,7 +358,7 @@ def submit_test_response(request, session_id, test_id):
                 mark_obtained+=1
         print(mark_obtained, total_marks)
         with connection.cursor() as cursor:
-            cursor.execute(f"INSERT INTO {session.result_table_name} (test_id, student_id, mark_obtained, total_marks) VALUES ({test_id}, {student_id}, {mark_obtained}, {total_marks})")
+            cursor.execute(f"INSERT INTO {session.result_table_name} (test_id, student_id, mark_obtained, total_marks, submission_time, total_time_taken, total_off_screen_time) VALUES ({test_id}, {student_id}, {mark_obtained}, {total_marks}, {submission_time}, {total_time_taken}, {total_off_screen_time})")
         return JsonResponse({'message': 'Test response submitted successfully'})
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)

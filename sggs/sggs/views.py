@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt 
-from django.http import JsonResponse, QueryDict, HttpResponseRedirect, Http404
+from django.http import JsonResponse, QueryDict, HttpResponseRedirect, Http404, HttpResponse
 from administration.models import *
 from teacher.models import *
 from student.models import *
@@ -127,9 +127,17 @@ def login(request):
     return render(request, 'sggs/login.html', {'form': form})
 
 def logout(request):
+    instructions = """
+    <script>
+        localStorage.clear();
+        sessionStorage.clear();
+        cookies.clear();
+        window.location.href = "/";
+    </script>
+    """ 
     auth_logout(request)
-    request.session.flush() 
-    return HttpResponseRedirect('/')
+     
+    return HttpResponse(instructions) 
  
 
 # Student views

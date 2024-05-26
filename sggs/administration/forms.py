@@ -99,14 +99,14 @@ class AdministratorForm(forms.ModelForm):
         fields = ['departments']
 
 class ClassSessionForm(forms.ModelForm): 
-    teacher = forms.ModelMultipleChoiceField(
-        label='Teacher', 
-        queryset=Teacher.objects.all(),   
-        widget=forms.CheckboxSelectMultiple()
-    )
+    # teacher = forms.ModelMultipleChoiceField(
+    #     label='Teacher', 
+    #     queryset=Teacher.objects.all(),   
+    #     widget=forms.CheckboxSelectMultiple()
+    # )
     class Meta:
         model = ClassSession
-        fields = ['department', 'teacher', 'semester', 'subject',  'year', 'start_date', 'end_date']
+        fields = ['department', 'semester', 'subject',  'year', 'start_date', 'end_date']
         widgets = {
             'start_date': forms.DateInput(attrs={'type': 'date'}),
             'end_date': forms.DateInput(attrs={'type': 'date'}),

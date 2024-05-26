@@ -4,14 +4,16 @@ from datetime import datetime, date
 from django.http import JsonResponse
 from django.utils import timezone
 from administration.models import Student, ClassSession
+from django.contrib.auth.decorators import login_required
 import random, json 
 
+@login_required
 def validate(request):
     if request.user.is_student < 1:
         return False
     return True
     
-
+@login_required
 def home(request):
     if not validate(request):
         return render(request, 'base/404.html')
@@ -55,6 +57,7 @@ def home(request):
     
     return render(request, 'student/home.html', context)
 
+@login_required
 def sessions(request):
     if not validate(request):
         return render(request, 'base/404.html') 

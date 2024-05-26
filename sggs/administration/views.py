@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def home(request):
-    if request.user.is_administrator == 1:
+    if request.user.is_administrator >= 1:
         return render(request, 'administration/home.html', {'is_administration': True, 'user': request.user})
     else:
         return render(request, 'base/404.html')
@@ -33,75 +33,74 @@ def home(request):
 
 @login_required
 def session_add(request):
-    if request.user.is_administrator >= 1:
-        if request.method == 'POST':
-            form = ClassSessionForm(request.POST)
-            if form.is_valid():
-                # print(form)
-                new_session = form.save(commit=False)
-                
-                existing_sessions = ClassSession.objects.filter(
-                    department=new_session.department,
-                    subject=new_session.subject,
-                    semester=new_session.semester,
-                    year=new_session.year
-                )
-                if existing_sessions.exists():
-                    error_message = "A session with the same department, subject, semester, and year already exists."
-                    return render(request, 'administration/session_add.html', {'is_administration': True, 'user': request.user, 'form': form, 'error_message': error_message})
-                else: 
-                    new_session.save()
-                    return redirect('admin_session_list') 
-        else:
-            form = ClassSessionForm()
-        return render(request, 'administration/session_add.html', {'is_administration': True, 'user': request.user,'form': form})
-    else:
+    if request.user.is_administrator < 1:
         return render(request, 'base/404.html')
-    
-def session_edit(request, session_id):
-    if request.user.is_administrator == 1:
-        session = get_object_or_404(ClassSession, id=session_id)
-        if request.method == 'POST':
-            form = EditClassSessionForm(request.POST, instance=session)
-            if form.is_valid():
-                # print(form)
-                form.save()
-                return redirect('admin_session_list')  
-        else:
-            form = EditClassSessionForm(instance=session)
-        return render(request, 'administration/session_edit.html', {'is_administration': True, 'user': request.user,'session':session,'form': form})
-    else:
-        return render(request, 'base/404.html')
-
-def session_delete(request, session_id):
-    if request.user.is_administrator == 1:
-        session = get_object_or_404(ClassSession, id=session_id)
-        if request.method == 'POST':
-            session.delete()
-            return redirect('admin_session_list')
-        return render(request, 'administration/session_delete.html', {'is_administration': True, 'user': request.user,'session': session})
-    else:
-        return render(request, 'base/404.html')
-
-def session_list(request):
-    if request.user.is_administrator == 1:
-        form = SessionFilterForm(request.GET)
-        sessions = ClassSession.objects.all()
-
+    if request.method == 'POST':
+        form = ClassSessionForm(request.POST)
         if form.is_valid():
-            department = form.cleaned_data.get('department')
-            semester = form.cleaned_data.get('semester')
-            subject = form.cleaned_data.get('subject')
-
-            if department:
-                sessions = sessions.filter(department=department)
-            if semester:
-                sessions = sessions.filter(semester=semester)
-            if subject:
-                sessions = sessions.filter(subject=subject)
-        return render(request, 'administration/session_list.html', {'is_administration': True, 'user': request.user,'sessions': sessions, 'form': form})
+            # print(form)
+            new_session = form.save(commit=False)
+            
+            existing_sessions = ClassSession.objects.filter(
+                department=new_session.department,
+                subject=new_session.subject,
+                semester=new_session.semester,
+                year=new_session.year
+            )
+            if existing_sessions.exists():
+                error_message = "A session with the same department, subject, semester, and year already exists."
+                return render(request, 'administration/session_add.html', {'is_administration': True, 'user': request.user, 'form': form, 'error_message': error_message})
+            else: 
+                new_session.save()
+                return redirect('admin_session_list') 
     else:
+        form = ClassSessionForm()
+    return render(request, 'administration/session_add.html', {'is_administration': True, 'user': request.user,'form': form}) 
+    
+@login_required
+def session_edit(request, session_id):
+    if request.user.is_administrator < 1:
         return render(request, 'base/404.html')
+    session = get_object_or_404(ClassSession, id=session_id)
+    if request.method == 'POST':
+        form = EditClassSessionForm(request.POST, instance=session)
+        if form.is_valid():
+            # print(form)
+            form.save()
+            return redirect('admin_session_list')  
+    else:
+        form = EditClassSessionForm(instance=session)
+    return render(request, 'administration/session_edit.html', {'is_administration': True, 'user': request.user,'session':session,'form': form}) 
+
+@login_required
+def session_delete(request, session_id):
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
+    session = get_object_or_404(ClassSession, id=session_id)
+    if request.method == 'POST':
+        session.delete()
+        return redirect('admin_session_list')
+    return render(request, 'administration/session_delete.html', {'is_administration': True, 'user': request.user,'session': session})
+
+@login_required
+def session_list(request):
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
+    form = SessionFilterForm(request.GET)
+    sessions = ClassSession.objects.all()
+
+    if form.is_valid():
+        department = form.cleaned_data.get('department')
+        semester = form.cleaned_data.get('semester')
+        subject = form.cleaned_data.get('subject')
+
+        if department:
+            sessions = sessions.filter(department=department)
+        if semester:
+            sessions = sessions.filter(semester=semester)
+        if subject:
+            sessions = sessions.filter(subject=subject)
+    return render(request, 'administration/session_list.html', {'is_administration': True, 'user': request.user,'sessions': sessions, 'form': form}) 
     
 @login_required
 def session_student_add(request, session_id):
@@ -150,95 +149,95 @@ def session_student_add(request, session_id):
 
 # Subject
 
+@login_required
 def subject_add(request):
-    if request.user.is_administrator == 1:
-        if request.method == 'POST':
-            form = SubjectForm(request.POST)
-            if form.is_valid():
-                form.save()
-                return redirect('admin_subject_list') 
-        else:
-            form = SubjectForm()
-        return render(request, 'administration/subject_add.html', {'is_administration': True, 'user': request.user,'form': form})
-    else:
+    if request.user.is_administrator < 1:
         return render(request, 'base/404.html')
-
-def subject_edit(request, subject_id):
-    if request.user.is_administrator == 1:
-        subject = get_object_or_404(Subject, pk=subject_id)
-        if request.method == 'POST':
-            form = SubjectForm(request.POST, instance=subject)
-            if form.is_valid():
-                form.save()
-                return redirect('admin_subject_list')  
-        else:
-            form = SubjectForm(instance=subject)
-        return render(request, 'administration/subject_edit.html', {'is_administration': True, 'user': request.user,'form': form})
-    else:
-        return render(request, 'base/404.html')
-
-def subject_delete(request, subject_id):
-    if request.user.is_administrator == 1:
-        subject = get_object_or_404(Subject, pk=subject_id)
-        if request.method == 'POST':
-            subject.delete()
+    if request.method == 'POST':
+        form = SubjectForm(request.POST)
+        if form.is_valid():
+            form.save()
             return redirect('admin_subject_list') 
-        return render(request, 'administration/subject_delete.html', {'is_administration': True, 'user': request.user,'subject': subject})
     else:
-        return render(request, 'base/404.html')
+        form = SubjectForm()
+    return render(request, 'administration/subject_add.html', {'is_administration': True, 'user': request.user,'form': form}) 
 
-def subject_list(request):
-    if request.user.is_administrator == 1:
-        subjects = Subject.objects.all()
-        return render(request, 'administration/subject_list.html', {'is_administration': True, 'user': request.user,'subjects': subjects})
-    else:
+@login_required
+def subject_edit(request, subject_id): 
+    if request.user.is_administrator < 1:
         return render(request, 'base/404.html')
+    subject = get_object_or_404(Subject, pk=subject_id)
+    if request.method == 'POST':
+        form = SubjectForm(request.POST, instance=subject)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_subject_list')  
+    else:
+        form = SubjectForm(instance=subject)
+    return render(request, 'administration/subject_edit.html', {'is_administration': True, 'user': request.user,'form': form})
+
+@login_required
+def subject_delete(request, subject_id):
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
+    subject = get_object_or_404(Subject, pk=subject_id)
+    if request.method == 'POST':
+        subject.delete()
+        return redirect('admin_subject_list') 
+    return render(request, 'administration/subject_delete.html', {'is_administration': True, 'user': request.user,'subject': subject})
+
+@login_required
+def subject_list(request):
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
+    subjects = Subject.objects.all()
+    return render(request, 'administration/subject_list.html', {'is_administration': True, 'user': request.user,'subjects': subjects})
 
 # Department
 
+@login_required
 def department_add(request):
-    if request.user.is_administrator == 1:
-        if request.method == 'POST':
-            form = DepartmentForm(request.POST)
-            if form.is_valid():
-                form.save()
-                return redirect('admin_department_list')  
-        else:
-            form = DepartmentForm()
-        return render(request, 'administration/department_add.html', {'is_administration': True, 'user': request.user,'form': form})
-    else:
+    if request.user.is_administrator < 1:
         return render(request, 'base/404.html')
-
-def department_edit(request, department_id):
-    if request.user.is_administrator == 1:
-        department = get_object_or_404(Department, pk=department_id)
-        if request.method == 'POST':
-            form = DepartmentForm(request.POST, instance=department)
-            if form.is_valid():
-                form.save() 
-                return redirect('admin_department_list')  
-        else:
-            form = DepartmentForm(instance=department)
-        return render(request, 'administration/department_edit.html', {'is_administration': True, 'user': request.user,'form': form})
-    else:
-        return render(request, 'base/404.html')
-
-def department_delete(request, department_id):
-    if request.user.is_administrator == 1:
-        department = get_object_or_404(Department, pk=department_id)
-        if request.method == 'POST':
-            department.delete()
+    if request.method == 'POST':
+        form = DepartmentForm(request.POST)
+        if form.is_valid():
+            form.save()
             return redirect('admin_department_list')  
-        return render(request, 'administration/department_delete.html', {'is_administration': True, 'user': request.user,'department': department})
     else:
-        return render(request, 'base/404.html')
+        form = DepartmentForm()
+    return render(request, 'administration/department_add.html', {'is_administration': True, 'user': request.user,'form': form})
 
-def department_list(request):
-    if request.user.is_administrator == 1:
-        departments = Department.objects.all()
-        return render(request, 'administration/department_list.html', {'is_administration': True, 'user': request.user,'departments': departments})
-    else:
+@login_required
+def department_edit(request, department_id):
+    if request.user.is_administrator < 1:
         return render(request, 'base/404.html')
+    department = get_object_or_404(Department, pk=department_id)
+    if request.method == 'POST':
+        form = DepartmentForm(request.POST, instance=department)
+        if form.is_valid():
+            form.save() 
+            return redirect('admin_department_list')  
+    else:
+        form = DepartmentForm(instance=department)
+    return render(request, 'administration/department_edit.html', {'is_administration': True, 'user': request.user,'form': form})
+
+@login_required
+def department_delete(request, department_id):
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
+    department = get_object_or_404(Department, pk=department_id)
+    if request.method == 'POST':
+        department.delete()
+        return redirect('admin_department_list')  
+    return render(request, 'administration/department_delete.html', {'is_administration': True, 'user': request.user,'department': department})
+
+@login_required
+def department_list(request):
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
+    departments = Department.objects.all()
+    return render(request, 'administration/department_list.html', {'is_administration': True, 'user': request.user,'departments': departments})
 
 
 
@@ -250,8 +249,8 @@ def add_teacher(request):
 
 @login_required
 def manage_teacher(request):
-    if not request.user.is_administrator == 1:
-        return render(request, 'base/404.html')  
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
     
     administrator = Administrator.objects.get(user = request.user) 
     departments = administrator.departments.all()
@@ -275,15 +274,18 @@ def manage_teacher(request):
 
 @login_required
 def teacher_details(request, teacher_id):
-    if not request.user.is_administrator == 1:
-        return render(request, 'base/404.html')  
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
     teacher = get_object_or_404(Teacher, pk=teacher_id)
     administrator = Administrator.objects.get(user = request.user) 
     departments = administrator.departments.all()
     sessions = ClassSession.objects.filter(teacher=teacher, active=True)
     return render(request, 'administration/teacher_detail.html', {'is_administration': True, 'user': request.user,'teacher': teacher, 'sessions': sessions})
 
+@login_required
 def add_teacher_from_excel(request):
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
     if request.method == 'POST' and request.FILES.get('excel_file'):
         excel_file = request.FILES['excel_file'] 
         try:
@@ -317,7 +319,7 @@ def add_teacher_from_excel(request):
                     'username': username,
                     'first_name': first_name,
                     'last_name': surname,
-                    'password': email,
+                    'password': make_password(email),
                 })
 
                 if not created:
@@ -388,10 +390,14 @@ def parse_excel(excel_file):
 
 # Student
 
+@login_required
 def add_student(request):
     return 0
 
+@login_required
 def add_student_from_excel(request):
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
     if request.method == 'POST' and request.FILES.get('excel_file'):
         excel_file = request.FILES['excel_file']
         try:
@@ -554,12 +560,18 @@ def calculate_attendance_percentage(session_id):
     
     return attendance_percentage
 
+@login_required
 def session_attendance(request, session_id):
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
     session = ClassSession.objects.get(pk=session_id)
     attendance_percentage = calculate_attendance_percentage(session_id)
     return render(request, 'administration/session_attendence.html', {'is_administration': True, 'user': request.user,'session': session, 'attendance_percentage': attendance_percentage})
 
+@login_required
 def manage_student(request):
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
     if request.method == 'POST':
         form = StudentSearchForm(request.POST)
         if form.is_valid():
@@ -595,7 +607,10 @@ def get_student_attendance(student_id):
 
     return attendance_data
 
+@login_required
 def manage_student_detail(request, id):
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
     student = get_object_or_404(Student, pk=id)
     attendance_data = get_student_attendance(id)
     return render(request, 'administration/student_manage_detail.html', {
@@ -609,7 +624,10 @@ def manage_student_detail(request, id):
 # Administration
 
 
+@login_required
 def add_admin_from_excel(request):
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
     if request.method == 'POST' and request.FILES.get('excel_file'):
         excel_file = request.FILES['excel_file'] 
         try:
@@ -642,7 +660,7 @@ def add_admin_from_excel(request):
                     'username': username,
                     'first_name': first_name,
                     'last_name': surname,
-                    'password': email,
+                    'password': make_password(email),
                 })
 
                 if not created:
@@ -697,9 +715,10 @@ def add_admin_from_excel(request):
 
 #Notifications
 
+@login_required
 def notifications(request):
-    if not request.user.is_administrator == 1:
-        return render(request, 'base/404.html')  
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
     # Student profile approve notifications
     student_profile_updates = Notification.objects.filter(notification_type=3, for_administrator=True)
 
@@ -721,9 +740,10 @@ def notifications(request):
         'user': request.user,
     })
 
+@login_required
 def approve_student_profile(request, user_id):
-    if not request.user.is_administrator == 1:
-        return render(request, 'base/404.html')  
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
     
 
     if request.method == 'POST': 
@@ -827,10 +847,10 @@ def approve_student_profile(request, user_id):
         'form': form
     })
 
+@login_required
 def approve_teacher_profile(request, user_id):
-
-    if not request.user.is_administrator == 1:
-        return render(request, 'base/404.html')  
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
     
 
     if request.method == 'POST': 
@@ -899,10 +919,10 @@ def approve_teacher_profile(request, user_id):
         'form': form
     })
 
+@login_required
 def approve_administration_profile(request, user_id):
-
-    if not request.user.is_administrator == 1:
-        return render(request, 'base/404.html')  
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
     
 
     if request.method == 'POST': 
@@ -971,10 +991,10 @@ def approve_administration_profile(request, user_id):
         'form': form
     })
 
+@login_required
 def approve_librarian_profile(request, user_id):
-
-    if not request.user.is_administrator == 1:
-        return render(request, 'base/404.html')  
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
     
 
     if request.method == 'POST': 
@@ -1093,6 +1113,8 @@ def send_approval_notification(model, role):
  
 @login_required
 def notification_list(request):
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
     if request.method == 'POST':
         notification_id = request.POST.get('notification_id')
         if notification_id:
@@ -1121,6 +1143,8 @@ def notification_list(request):
 
 @login_required
 def approve_notification(request):
+    if request.user.is_administrator < 1:
+        return render(request, 'base/404.html')
     if request.method == 'POST':
         notification_id = request.POST.get('notification_id')
         action = request.POST.get('action')  

@@ -6,7 +6,7 @@
         {% if sessions %}
             {% for session in sessions %}
             <div class="list-group-item d-flex justify-content-between align-items-center">
-                <span>{{ session.subject.name }} - Year: {{ session.year }}</span>
+                <span>{{ session.subject.name }} - Year: {{ session.year }}- ({{session.department}})</span>
                 <div>
                     <a href="{% url 'teacher_take_attendence' session_id=session.id %}" class="btn btn-primary mr-2">Take Attendance</a>
                     <a href="{% url 'teacher_test_create' session_id=session.id %}" class="btn btn-primary mr-2">Create Test</a>

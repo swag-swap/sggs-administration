@@ -9,21 +9,21 @@
             <thead>
                 <tr>
                     <th>No.</th>
-                    <th>ID</th>
+                    <!-- <th>ID</th> -->
                     <th>Author</th>
                     <th>Question</th>
-                    <th>Question Image</th>
+                    <!-- <th>Question Image</th> -->
                     <th>Option 1</th>
-                    <th>Option 1 Image</th>
+                    <!-- <th>Option 1 Image</th> -->
                     <th>Option 2</th>
-                    <th>Option 2 Image</th>
+                    <!-- <th>Option 2 Image</th> -->
                     <th>Option 3</th>
-                    <th>Option 3 Image</th>
+                    <!-- <th>Option 3 Image</th> -->
                     <th>Option 4</th>
-                    <th>Option 4 Image</th>
+                    <!-- <th>Option 4 Image</th> -->
                     <th>Correct Option</th>
                     <th>Explanation</th>
-                    <th>Explanation Image</th>
+                    <!-- <th>Explanation Image</th> -->
                     <th>Action</th>
                 </tr>
             </thead>
@@ -31,21 +31,21 @@
                 {% for row in rows %}
                 <tr>
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ row.0 }}</td>
+                    <!-- <td>{{ row.0 }}</td> -->
                     <td>{{ row.1 }}</td>
                     <td>{{ row.2 }}</td>
-                    <td>{{ row.3 }}</td>
+                    <!-- <td>{{ row.3 }}</td> -->
                     <td>{{ row.4 }}</td>
-                    <td>{{ row.5 }}</td>
+                    <!-- <td>{{ row.5 }}</td> -->
                     <td>{{ row.6 }}</td>
-                    <td>{{ row.7 }}</td>
+                    <!-- <td>{{ row.7 }}</td> -->
                     <td>{{ row.8 }}</td>
-                    <td>{{ row.9 }}</td>
+                    <!-- <td>{{ row.9 }}</td> -->
                     <td>{{ row.10 }}</td>
-                    <td>{{ row.11 }}</td>
+                    <!-- <td>{{ row.11 }}</td> -->
                     <td>{{ row.12 }}</td>
                     <td>{{ row.13 }}</td>
-                    <td>{{ row.14 }}</td>
+                    <!-- <td>{{ row.14 }}</td> -->
                     <td>
                         <a href="{% url 'teacher_delete_question' subject_id=subject.id question_id=row.0 %}" class="btn btn-danger">Delete</a>
                     </td>

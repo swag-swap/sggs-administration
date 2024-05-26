@@ -128,12 +128,16 @@ def login(request):
 
 def logout(request):
     instructions = """
+    <html>
+    <body>
     <script>
         localStorage.clear();
         sessionStorage.clear();
         cookies.clear();
         window.location.href = "/";
     </script>
+    </body>
+    </html>
     """ 
     auth_logout(request)
      

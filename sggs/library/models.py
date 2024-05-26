@@ -42,3 +42,4 @@ class ReadingEntry(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     entry_time = models.DateTimeField(auto_now_add=True)
     exit_time = models.DateTimeField(default=None, null=True)
+

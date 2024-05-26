@@ -12,7 +12,7 @@ from administration.views import parse_excel
  
 @login_required
 def home(request): 
-    if not request.user.is_authenticated or not request.user.is_librarian == 1:
+    if request.user.is_librarian < 1:
         return render(request, 'base/404.html')
     recent_arrivals = Book.objects.order_by('-publication_date')[:3]  
 
@@ -28,8 +28,9 @@ def home(request):
     }
     return render(request, 'library/home.html', context)
 
+@login_required
 def book_list(request):
-    if not request.user.is_authenticated or not request.user.is_librarian == 1:
+    if request.user.is_librarian < 1:
         return render(request, 'base/404.html')
     all_books = Book.objects.all()
  
@@ -60,8 +61,9 @@ def book_list(request):
     }
     return render(request, 'library/book_list.html', context)
 
+@login_required
 def book_add(request):
-    if not request.user.is_authenticated or not request.user.is_librarian == 1:
+    if request.user.is_librarian < 1:
         return render(request, 'base/404.html')
     if request.method == 'POST':
         form = BookForm(request.POST, request.FILES)
@@ -72,9 +74,10 @@ def book_add(request):
         form = BookForm()
     return render(request, 'library/book_add.html', {'user':request.user,'form': form, 'is_librarian': True})
 
+@login_required
 def add_books_from_excel(request):
-    if not request.user.is_authenticated or not request.user.is_librarian == 1:
-        return render(request, 'base/404.html')  
+    if request.user.is_librarian < 1:
+        return render(request, 'base/404.html')
     
     if request.method == 'POST' and request.FILES.get('excel_file'):
         excel_file = request.FILES['excel_file']
@@ -135,9 +138,10 @@ def add_books_from_excel(request):
      
     return render(request, 'library/books_add_excel.html', {'form': BookForm(), 'is_librarian': True})
 
+@login_required
 def book_delete(request, book_id):
-    if not request.user.is_authenticated or not request.user.is_librarian == 1:
-        return render(request, 'base/404.html')  
+    if request.user.is_librarian < 1:
+        return render(request, 'base/404.html') 
     book = get_object_or_404(Book, id=book_id)
     print(book, "HIIII")
     book.delete() 
@@ -146,8 +150,9 @@ def book_delete(request, book_id):
 
 
 
+@login_required
 def borrow_book(request):
-    if not request.user.is_authenticated or not request.user.is_librarian == 1:
+    if request.user.is_librarian < 1:
         return render(request, 'base/404.html')  
     
     if request.method == 'POST':
@@ -170,9 +175,10 @@ def borrow_book(request):
     else: 
         return render(request, 'library/borrow_book.html', {'user':request.user, 'is_librarian': True})
 
+@login_required
 def return_book(request):
-    if not request.user.is_authenticated or not request.user.is_librarian == 1:
-        return render(request, 'base/404.html')  
+    if request.user.is_librarian < 1:
+        return render(request, 'base/404.html')
     
     if request.method == 'POST':
         username = request.POST.get('username').strip()
@@ -195,8 +201,9 @@ def return_book(request):
     else: 
         return render(request, 'library/return_book.html', {'user':request.user, 'is_librarian': True})
 
+@login_required
 def borrower_list(request):
-    if not request.user.is_authenticated or not request.user.is_librarian == 1:
+    if request.user.is_librarian < 1:
         return render(request, 'base/404.html')  
     
     borrowers = Borrower.objects.all()
@@ -227,9 +234,10 @@ def borrower_list(request):
 
 
 
+@login_required
 def send_reminder_email(request):
-    if not request.user.is_authenticated or not request.user.is_librarian == 1:
-        return render(request, 'base/404.html')   
+    if request.user.is_librarian < 1:
+        return render(request, 'base/404.html') 
     if request.method == 'POST':
         overdue_borrowers = Borrower.objects.filter(return_date__isnull=True, borrowed_date__lte=timezone.now() - timedelta(days=7))
         to_email = []

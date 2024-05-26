@@ -1,23 +1,53 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static%}
 {% block content %}
-<div class="container mt-5">
-    <h1 class="mb-4 text-center">Take Attendance</h1>
-    <h2 class="mb-3 text-center">Session: {{ session }}</h2>
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="excel_file">Upload Excel File:</label>
-                    <input type="file" class="form-control-file" id="excel_file" name="excel_file" accept=".xlsx,.xls">
-                </div>
-                <div class="form-group">
-                    <label for="attendance_date">Select Attendance Date:</label>
-                    <input type="date" class="form-control" id="attendance_date" name="attendance_date">
-                </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
-            </form>
+<div class="container">
+    <h2 class="my-4">Take Attendance</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="excel_file">Upload Excel File:</label>
+            <input type="file" class="form-control-file" id="excel_file" name="excel_file" accept=".xls, .xlsx">
         </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+        <a href="{% static 'samples/Add_session_attendance.xlsx' %}" download class="btn btn-secondary">Download Sample File</a>
+    </form>
+    {% if errors %}
+    <div class="alert alert-danger mt-4" role="alert">
+        {% for error in errors %}
+        <p>{{ error }}</p>
+        {% endfor %}
     </div>
+    {% endif %}
+    {% if added_attendance %}
+    <div class="alert alert-success mt-4" role="alert">
+        <p>Attendance successfully added for the following students:</p>
+        <ul>
+            {% for student, date in added_attendance %}
+            <li>{{ student.reg_no}} , {{date }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    {% if already_filled %}
+    <div class="alert alert-warning mt-4" role="alert">
+        <p>Attendance already filled for the following students. Updated their records:</p>
+        <ul>
+            {% for student, date in already_filled %}
+            <li>{{ student.reg_no}}, {{date }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    {% if student_not_exist %}
+    <div class="alert alert-danger mt-4" role="alert">
+        <p>Students with the following registration numbers do not exist:</p>
+        <ul>
+            {% for reg_no in student_not_exist %}
+            <li>{{ reg_no }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

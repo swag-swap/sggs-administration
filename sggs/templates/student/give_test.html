@@ -233,265 +233,328 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 <script>
+let total_time = 0;
+let warningCount = 0;
+let devToolsCount = 0;
+let outsideStartTime = null;
+let totalOutsideTime = 0;
 
-    
-    let total_time = 0
-    let warningCount = 0;
-    let devToolsCount = 0;
-    let outsideStartTime = null;
-    let totalOutsideTime = 0;
+// WebSocket connection
+const session_id = "{{ session_id }}";
+const test_id = "{{ test_id }}";
+// const socket = new WebSocket('ws://' + window.location.host + '/ws/session/' + session_id + '/test/' + test_id + '/');
+
+// socket.onmessage = function (e) {
+//     const data = JSON.parse(e.data);
+//     console.log('Message from server:', data.message);
+// };
+
+// socket.onclose = function (e) {
+//     console.error('Socket closed unexpectedly');
+// };
 
 
-    // Full Screen of window
-    document.getElementById("full-screen-btn").addEventListener("click", () => { 
-        if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen();
-        } else if (document.documentElement.mozRequestFullScreen) {
-            // Firefox
-            document.documentElement.mozRequestFullScreen();
-        } else if (document.documentElement.webkitRequestFullscreen) {
-            // Chrome, Safari and Opera
-            document.documentElement.webkitRequestFullscreen();
-        } else if (document.documentElement.msRequestFullscreen) {
-            // IE/Edge
-            document.documentElement.msRequestFullscreen();
-        } 
-        document.getElementById("test-content").style.display = 'block';
-        document.getElementById("pop-up").style.display = 'none';
+
+// WebSocket connection for teacher's dashboard
+const teacherSocket = new WebSocket('ws://' + window.location.host + '/ws/session/' + session_id + '/test/' + test_id + '/teacher/');
+
+let username = "{{ user.username }}" 
+function sendActivityUpdate(activity) {
+    teacherSocket.send(JSON.stringify({
+        'activity': `${username}: ${activity}`,
+        'timestamp': new Date().toISOString()
+    }));
+}
+
+
+teacherSocket.onmessage = function (e) {
+    const data = JSON.parse(e.data);
+    console.log('Message from teacher dashboard:', data.message);
+};
+
+teacherSocket.onclose = function (e) {
+    console.error('Teacher dashboard socket closed unexpectedly');
+};
+
+function sendActivityToTeacher(activity) {
+    teacherSocket.send(JSON.stringify({
+        'activity': activity,
+        'timestamp': new Date().toISOString()
+    }));
+}
+
+// Listen for blur events on the window
+window.addEventListener('blur', function() {
+    sendActivityToTeacher('Screen blurred');
+});
+
+// Full Screen of window
+document.getElementById("full-screen-btn").addEventListener("click", () => {
+    if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+    } else if (document.documentElement.mozRequestFullScreen) {
+        document.documentElement.mozRequestFullScreen();
+    } else if (document.documentElement.webkitRequestFullscreen) {
+        document.documentElement.webkitRequestFullscreen();
+    } else if (document.documentElement.msRequestFullscreen) {
+        document.documentElement.msRequestFullscreen();
+    }
+    document.getElementById("test-content").style.display = 'block';
+    document.getElementById("pop-up").style.display = 'none';
+    sendActivityUpdate('Entered full-screen mode');
+});
+
+// Access to buttons are not given
+document.addEventListener("keydown", (event) => event.preventDefault());
+document.addEventListener("contextmenu", (event) => event.preventDefault());
+document.addEventListener('keydown', function (event) {
+    event.preventDefault();
+    sendActivityUpdate('Key pressed: ' + event.key);
+});
+
+function showQuestion(questionNumber) {
+    const questions = document.querySelectorAll(".question");
+    questions.forEach((question, index) => {
+        question.style.display =
+            index + 1 === questionNumber ? "block" : "none";
     });
+    sendActivityUpdate('Viewing question: ' + questionNumber);
+}
 
-    // Access to buttons are not given
-    document.addEventListener("keydown", (event) => event.preventDefault());
-    document.addEventListener("contextmenu", (event) => event.preventDefault());
-    document.addEventListener('keydown', function(event) {
-        event.preventDefault();
-    });
-
-    function showQuestion(questionNumber) {
-        const questions = document.querySelectorAll(".question");
-        questions.forEach((question, index) => {
-            question.style.display =
-                index + 1 === questionNumber ? "block" : "none";
+window.onload = function () {
+    const url = window.location.href;
+    const expectedUrlPattern =
+        "/student/session/{{session_id}}/test/{{test_id}}";
+    if (url.includes(expectedUrlPattern)) {
+        const selectedOptions = getSelectedOptions();
+        console.log(selectedOptions);
+        selectedOptions.forEach((selectedOption) => {
+            const radioButton = document.getElementById(selectedOption);
+            if (radioButton) {
+                radioButton.checked = true;
+            }
+            const qId = "btn_" + selectedOption.split("_")[1];
+            const btn = document.getElementById(qId);
+            btn.className = "nav-buttons  btn btn-secondary  m-1 col-2";
         });
     }
 
-    window.onload = function () { 
-        const url = window.location.href;
-        const expectedUrlPattern =
-            "/student/session/{{session_id}}/test/{{test_id}}";
-        if (url.includes(expectedUrlPattern)) {
-            const selectedOptions = getSelectedOptions(); 
-            console.log(selectedOptions);
-            selectedOptions.forEach((selectedOption) => {
-                const radioButton = document.getElementById(selectedOption);
-                if (radioButton) {
-                    radioButton.checked = true;
-                }
-                const qId = "btn_"+ selectedOption.split("_")[1]
-                const btn = document.getElementById(qId);
-                btn.className = "nav-buttons  btn btn-secondary  m-1 col-2"
-            });
+    function updateTimer() {
+        const now = new Date();
+        const distance = testEndTime - now;
+        total_time++;
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor(
+            (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        );
+        const minutes = Math.floor(
+            (distance % (1000 * 60 * 60)) / (1000 * 60)
+        );
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById(
+            "time"
+        ).innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+        if (distance < 0) {
+            clearInterval(x);
+            document.getElementById("time").innerText = "EXPIRED";
         }
+    }
+    updateTimer();
+    const x = setInterval(updateTimer, 1000);
 
+    function sendWarning(message) {
+        warningCount++;
+        document.getElementById('warningModalBody').innerText = message;
+        const warningModal = new bootstrap.Modal(document.getElementById('warningModal'));
+        warningModal.show();
+        console.log(`Warning Count: ${warningCount}`);
+        sendActivityUpdate('Warning: ' + message);
+    }
 
-
-        function updateTimer() {
-            const now = new Date();
-            const distance = testEndTime - now; 
-            total_time++; 
-
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor(
-                (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-            );
-            const minutes = Math.floor(
-                (distance % (1000 * 60 * 60)) / (1000 * 60)
-            );
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            document.getElementById(
-                "time"
-            ).innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-
-            if (distance < 0) {
-                clearInterval(x);
-                document.getElementById("time").innerText = "EXPIRED";
-            }
-        }
-        updateTimer();
-        const x = setInterval(updateTimer, 1000);
-
-        function sendWarning(message) {
-            warningCount++;
-            document.getElementById('warningModalBody').innerText = message;
-            const warningModal = new bootstrap.Modal(document.getElementById('warningModal'));
-            warningModal.show();
-            console.log(`Warning Count: ${warningCount}`);
-        }
-
-        function handleVisibilityChange() {
-            if (document.hidden) {
-                outsideStartTime = new Date();
-                sendWarning("You have switched tabs or minimized the window.");
-            } else {
-                if (outsideStartTime) {
-                    totalOutsideTime += Math.floor((new Date() - outsideStartTime) / 1000);
-                    outsideStartTime = null;
-                    console.log(`Total Outside Time: ${totalOutsideTime} seconds`);
-                }
-            }
-        }
-
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-
-        window.addEventListener("blur", () => {
-            setTimeout(() => {
-                if (!document.hasFocus()) {
-                    outsideStartTime = new Date();
-                    sendWarning("You have switched tabs or minimized the window. So, your time counting for outside, so click the outside of this. Your previous outside window time: "+ totalOutsideTime);
-                }
-            }, 200);
-        });
-
-        window.addEventListener("focus", () => {
+    function handleVisibilityChange() {
+        if (document.hidden) {
+            outsideStartTime = new Date();
+            sendWarning("You have switched tabs or minimized the window.");
+        } else {
             if (outsideStartTime) {
                 totalOutsideTime += Math.floor((new Date() - outsideStartTime) / 1000);
                 outsideStartTime = null;
                 console.log(`Total Outside Time: ${totalOutsideTime} seconds`);
+                // sendActivityUpdate('Returned to test after ' + totalOutsideTime + ' seconds outside');
             }
-        });
-
-        function getFormattedTime(seconds) {
-            const hours = Math.floor(seconds / 3600);
-            const minutes = Math.floor((seconds % 3600) / 60);
-            const remainingSeconds = seconds % 60;
-
-            return `${hours}h ${minutes}m ${remainingSeconds}s`;
         }
+    }
 
-        window.setInterval(() => {
-            console.log(`You have been outside the screen for a total of: ${getFormattedTime(totalOutsideTime)}`);
-            document.getElementById("out-side-time").innerHTML = `You have been outside the screen for a total of: ${getFormattedTime(totalOutsideTime)}`
-        }, 1000);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    window.addEventListener("blur", () => {
+        setTimeout(() => {
+            if (!document.hasFocus()) {
+                outsideStartTime = new Date();
+                sendWarning("You have switched tabs or minimized the window. So, your time counting for outside, so click the outside of this. Your previous outside window time: " + totalOutsideTime);
+            }
+        }, 200);
+    });
+
+    window.addEventListener("focus", () => {
+        if (outsideStartTime) {
+            totalOutsideTime += Math.floor((new Date() - outsideStartTime) / 1000);
+            outsideStartTime = null;
+            console.log(`Total Outside Time: ${totalOutsideTime} seconds`);
+            sendActivityUpdate('Returned to test after ' + totalOutsideTime + ' seconds outside');
+        }
+    });
+
+    function getFormattedTime(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const remainingSeconds = seconds % 60;
+
+        return `${hours}h ${minutes}m ${remainingSeconds}s`;
+    }
+
+    window.setInterval(() => {
+        console.log(`You have been outside the screen for a total of: ${getFormattedTime(totalOutsideTime)}`);
+        document.getElementById("out-side-time").innerHTML = `You have been outside the screen for a total of: ${getFormattedTime(totalOutsideTime)}`;
+        // sendActivityUpdate('Total outside time: ' + getFormattedTime(totalOutsideTime));
+    }, 1000);
+};
+
+function setSelectedOptions(selectedOptions, expirationTime) {
+    const now = new Date();
+    const expires = new Date(expirationTime);
+    const timeUntilExpires = expires.getTime() - now.getTime();
+    selectedOptions.forEach((option) => {
+        trueOption = option.split('_')[1];
+        document.getElementById(`btn_${trueOption}`).className = "nav-buttons  btn btn-secondary  m-1 col-2";
+    });
+    localStorage.setItem('testProgress_{{session_id}}_{{test_id}}', `${selectedOptions.join("|")}`);
+}
+
+function getSelectedOptions() {
+    const cookies = localStorage.getItem('testProgress_{{session_id}}_{{test_id}}');
+    console.log(cookies);
+    if (cookies) {
+        return cookies.split("|");
+    }
+    else return [];
+}
+
+const testEndTimeString = "{{ test_details.3 }}";
+const testEndTime = moment(
+    testEndTimeString,
+    "MMM Do, YYYY, h:mm a"
+).toDate();
+const testEndTimeUTCString = testEndTime.toUTCString();
+console.log(testEndTimeString, testEndTime, testEndTimeUTCString);
+
+document.querySelectorAll(".form-check-input").forEach((radioButton) => {
+    radioButton.addEventListener("click", function () {
+        const selectedOptions = Array.from(
+            document.querySelectorAll(".form-check-input:checked")
+        ).map((input) => input.id);
+        setSelectedOptions(selectedOptions, testEndTimeUTCString);
+        // sendActivityUpdate('Selected option: ' + radioButton.id);
+    });
+});
+
+
+const submitButton = document.getElementById('submitTestButton');
+
+async function submitTest() {
+    var selectedOptions = [];
+    var questions = document.getElementsByClassName('question');
+
+    for (var i = 0; i < questions.length; i++) {
+        var selectedOption = questions[i].querySelector('input:checked');
+        if (selectedOption) {
+            var optionIdParts = selectedOption.id.split('_');
+            var questionId = optionIdParts[1];
+            var optionNumber = optionIdParts[0];
+            selectedOptions.push({ question_id: questionId, selected_option: optionNumber });
+        } else {
+            var questionId = (questions[i].querySelector('input').id.split('_'))[1];
+            selectedOptions.push({ question_id: questionId, selected_option: 0 });
+        }
+    }
+
+    var data = {
+        selected_options: selectedOptions,
+        submission_time: Date.now(),
+        total_time_taken: total_time,
+        total_off_screen_time: totalOutsideTime
     };
+    console.log("Submitted");
+    sendActivityUpdate('Test submitted');
 
-    function setSelectedOptions(selectedOptions, expirationTime) {
-        const now = new Date();
-        const expires = new Date(expirationTime);
-        const timeUntilExpires = expires.getTime() - now.getTime();
-        // document.cookie = `selected_options=${selectedOptions.join( "|" )};expires=${expires.toUTCString()};`;
-        selectedOptions.forEach((option) => {
-            // console.log(option);
-            trueOption = option.split('_')[1]
-            // console.log(trueOption);
-            document.getElementById(`btn_${trueOption}`).className = "nav-buttons  btn btn-secondary  m-1 col-2"
+    try {
+        fetch('/student/session/{{session_id}}/test/{{test_id}}/response/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
+            },
+            body: JSON.stringify(data)
         })
-        localStorage.setItem('testProgress_{{session_id}}_{{test_id}}', `${selectedOptions.join( "|" )}`);
-    }
-
-    function getSelectedOptions() {
-        const cookies = localStorage.getItem('testProgress_{{session_id}}_{{test_id}}');
-        console.log(cookies);
-        if (cookies){
-            return cookies.split("|");
-        }
-        else return [];
-         
-    }
-
-    const testEndTimeString = "{{ test_details.3 }}";
-    const testEndTime = moment(
-        testEndTimeString,
-        "MMM Do, YYYY, h:mm a"
-    ).toDate();
-    const testEndTimeUTCString = testEndTime.toUTCString();
-    console.log(testEndTimeString, testEndTime, testEndTimeUTCString);
-
-    document.querySelectorAll(".form-check-input").forEach((radioButton) => {
-        radioButton.addEventListener("click", function () {
-            // if(radioButton.checked){
-            //     radioButton.checked = false;
-            // }
-            const selectedOptions = Array.from(
-                document.querySelectorAll(".form-check-input:checked")
-            ).map((input) => input.id);
-            setSelectedOptions(selectedOptions, testEndTimeUTCString); 
-        });
-    });
-
-    async function submitTest() {
-        var selectedOptions = [];
-        var questions = document.getElementsByClassName('question');
-
-        for (var i = 0; i < questions.length; i++) {
-            var selectedOption = questions[i].querySelector('input:checked');
-            
-            if (selectedOption) {
-                var optionIdParts = selectedOption.id.split('_');
-                var questionId = optionIdParts[1];
-                var optionNumber = optionIdParts[0];
-                
-                selectedOptions.push({ question_id: questionId, selected_option: optionNumber });
+        .then(function (response) {
+            if (response.ok) {
+                console.log('Test response submitted successfully.');
+                window.location.href = "/";
             } else {
-                var questionId = (questions[i].querySelector('input').id.split('_'))[1];
-                selectedOptions.push({ question_id: questionId, selected_option: 0 });
+                console.error('Error submitting test response.');
+                
+                submitButton.disabled = false;
+                submitButton.textContent = 'Submit Test';
+                
+                alert('Error submitting test (try it again): ' + error.message);
             }
-        }
-
-        var data = {
-            selected_options: selectedOptions,
-            submission_time:  Date.now(),
-            total_time_taken: total_time,
-            total_off_screen_time: totalOutsideTime
-        };
-        console.log("Submitted");
-
-        try {
-            fetch('/student/session/{{session_id}}/test/{{test_id}}/response/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
-                },
-                body: JSON.stringify(data)
-            })
-            .then(function(response) {
-                if (response.ok) {
-                    console.log('Test response submitted successfully.');
-                    window.location.href = "/";
-                } else {
-                    console.error('Error submitting test response.');
-
-                }
-            })
-            .catch(function(error) {
-                console.error('Error:', error);
-            });
-
-        } catch (error) {
+        })
+        .catch(function (error) {
             console.error('Error:', error);
-        }
+            console.error('Error submitting test response.');
+            
+            submitButton.disabled = false;
+            submitButton.textContent = 'Submit Test';
+            
+            alert('Error submitting test (try it again): ' + error.message);
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
     }
+}
 
-    // Event listener for the Submit Test button
-    document.getElementById('submitTestButton').addEventListener('click', async function(e) {
-        console.log("Hiii");
-        e.preventDefault();
+// Event listener for the Submit Test button
+submitButton.addEventListener('click', async function (e) {
+    e.preventDefault();
+    
+    // Disable the button to prevent multiple submissions
+    submitButton.disabled = true;
+    submitButton.textContent = 'Submitting...';
+
+    try {
         await submitTest();
-    });
+    } catch (error) {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Submit Test';
+        
+        alert('Error submitting test: ' + error.message);
+    }
+});
 
-    // Warn the user before leaving the page
-    window.addEventListener("beforeunload", function(event) {
-        // saveTestProgress();
-        event.preventDefault();
-        event.returnValue = "Are you sure you want to leave? Test will be submitted!!!";
-    });
+// Warn the user before leaving the page
+window.addEventListener("beforeunload", function (event) {
+    event.preventDefault();
+    event.returnValue = "Are you sure you want to leave? Test will be submitted!!!";
+});
 
-    // Save test progress when the page is unloaded
-    window.addEventListener("unload", function() {
-        // submitTest();
-    });
-
+// Save test progress when the page is unloaded
+window.addEventListener("unload", function () {
+    // submitTest();
+});
 
 </script>
 

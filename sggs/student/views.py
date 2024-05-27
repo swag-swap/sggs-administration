@@ -3,7 +3,7 @@ from django.db import connection
 from datetime import datetime, date
 from django.http import JsonResponse
 from django.utils import timezone
-from administration.models import Student, ClassSession
+from administration.models import Student, ClassSession, Notification
 from django.contrib.auth.decorators import login_required
 import random, json 
 
@@ -417,7 +417,7 @@ def test_result(request, session_id, test_id):
     JOIN 
         {session.response_table_name} as rt 
     ON 
-        tq.question_id = rt.question_id
+        tq.question_id = rt.question_id AND rt.student_id = {student_id}
 
     JOIN 
         {session.subject.subjects_question_table_name} AS sq 
@@ -498,3 +498,24 @@ def attendance_success(request):
     if not validate(request):
         return render(request, 'base/404.html')
     return render(request, 'attendance_success.html')
+
+
+@login_required
+def view_notifications(request):
+    if not validate(request):
+        return render(request, 'base/404.html')
+    
+    notifications = Notification.objects.filter(
+        to_user=request.user,
+        for_student=True
+    ).order_by('-created_at')
+    
+    notifications.update(read=True)
+
+    context = {
+        'user': request.user,
+        'is_student': True,
+        'notifications': notifications
+    }
+    
+    return render(request, 'student/student_notifications.html', context)

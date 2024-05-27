@@ -18,7 +18,7 @@ from operator import itemgetter
 
 @login_required
 def teacher_home(request): 
-    if request.user.is_teacher == -1:
+    if request.user.is_teacher < 1:
         render(request, 'base/404.html')
     teacher = Teacher.objects.get(user=request.user) 
     sessions = teacher.session_teachers.filter(active=True)
@@ -27,7 +27,7 @@ def teacher_home(request):
 
 @login_required
 def edit_profile(request):
-    if request.user.is_teacher == -1:
+    if request.user.is_teacher < 1:
         render(request, 'base/404.html')
     teacher = Teacher.objects.get(user=request.user)
     if request.method == 'POST':
@@ -57,7 +57,7 @@ def edit_profile(request):
 
 @login_required
 def start_attendence(request, session_id):
-    if request.user.is_teacher <= 0:
+    if request.user.is_teacher < 1:
         render(request, 'base/404.html')
     session = get_object_or_404(ClassSession, pk=session_id)
     session.attendence_active = True
@@ -75,7 +75,7 @@ def start_attendence(request, session_id):
 
 @login_required
 def stop_attendence(request, session_id):
-    if request.user.is_teacher == -1:
+    if request.user.is_teacher < 1:
         render(request, 'base/404.html')
     session = get_object_or_404(ClassSession, pk=session_id)
     session.attendence_active = False
@@ -86,7 +86,7 @@ def stop_attendence(request, session_id):
 
 @login_required
 def take_attendance(request, session_id):
-    if request.user.is_teacher == -1:
+    if request.user.is_teacher < 1:
         render(request, 'base/404.html')
     try:
         session = get_object_or_404(ClassSession, pk=session_id)
@@ -165,15 +165,15 @@ def take_attendance(request, session_id):
 
 @login_required
 def subject_list(request):
-    if request.user.is_teacher == -1:
+    if request.user.is_teacher < 1:
         render(request, 'base/404.html')
     subjects = Subject.objects.all()
     return render(request, 'teacher/subject_list.html', {'is_teacher':True, 'user':request.user,'subjects': subjects})
 
 @login_required
 def add_question(request, subject_id):
-    if not request.user.is_teacher == 1:
-        return render(request, 'base/404.html')
+    if request.user.is_teacher < 1:
+        render(request, 'base/404.html')
     
     subject = get_object_or_404(Subject, id=subject_id)
 
@@ -226,6 +226,8 @@ def delete_question_images(question_table_name, question_id):
 
 @login_required
 def teacher_delete_question(request, subject_id, question_id): 
+    if request.user.is_teacher < 1:
+        render(request, 'base/404.html')
     subject = get_object_or_404(Subject, id=subject_id) 
     question_table_name = subject.subjects_question_table_name   
     cursor = connection.cursor()
@@ -264,7 +266,7 @@ def teacher_delete_question(request, subject_id, question_id):
 
 @login_required
 def subject_questions(request, subject_id):
-    if request.user.is_teacher == -1:
+    if request.user.is_teacher < 1:
         render(request, 'base/404.html')
     subject = get_object_or_404(Subject, id=subject_id) 
     question_table_name = subject.subjects_question_table_name   
@@ -280,6 +282,8 @@ def subject_questions(request, subject_id):
     return render(request, 'teacher/subject_questions.html', {'is_teacher':True, 'user':request.user,'rows': rows, 'subject':subject})
 
 def subject_questions_from_excel(request, subject_id):
+    if request.user.is_teacher < 1:
+        render(request, 'base/404.html')
     subject = get_object_or_404(Subject, id=subject_id) 
     question_table_name = subject.subjects_question_table_name   
 
@@ -331,7 +335,7 @@ def subject_questions_from_excel(request, subject_id):
 
 @login_required
 def teacher_sessions(request):
-    if request.user.is_teacher == -1:
+    if request.user.is_teacher < 1:
         render(request, 'base/404.html')
     teacher = Teacher.objects.get(user=request.user) 
     sessions = teacher.session_teachers.all()
@@ -348,8 +352,8 @@ def session_attendance(request, session_id):
 
 @login_required
 def session_tests(request, session_id):
-    if request.user.is_teacher == -1:
-        return render(request, 'base/404.html') 
+    if request.user.is_teacher < 1:
+        render(request, 'base/404.html')
     session = ClassSession.objects.get(id=session_id)
     test_table_name = session.test_table_name
     cursor = connection.cursor()
@@ -361,8 +365,8 @@ def session_tests(request, session_id):
 
 @login_required
 def test_create(request, session_id):
-    if request.user.is_teacher == -1:
-        return render(request, 'base/404.html') 
+    if request.user.is_teacher < 1:
+        render(request, 'base/404.html')
     session = ClassSession.objects.get(id=session_id)
 
     if request.method == 'POST':
@@ -399,8 +403,8 @@ def test_create(request, session_id):
 
 @login_required
 def test_edit(request, session_id, test_id):
-    if request.user.is_teacher == -1:
-        return render(request, 'base/404.html') 
+    if request.user.is_teacher < 1:
+        render(request, 'base/404.html')
 
     session = get_object_or_404(ClassSession, id=session_id)
     test_table_name = session.test_table_name
@@ -471,8 +475,8 @@ def test_edit(request, session_id, test_id):
 
 @login_required
 def test_delete(request, session_id, test_id):
-    if request.user.is_teacher == -1:
-        return render(request, 'base/404.html') 
+    if request.user.is_teacher < 1:
+        render(request, 'base/404.html') 
 
     session = get_object_or_404(ClassSession, id=session_id)
     test_table_name = session.test_table_name
@@ -495,8 +499,8 @@ def test_delete(request, session_id, test_id):
 
 @login_required
 def test_edit_questions(request, session_id, test_id):
-    if request.user.is_teacher == -1:
-        return render(request, 'base/404.html') 
+    if request.user.is_teacher < 1:
+        render(request, 'base/404.html') 
 
     session = get_object_or_404(ClassSession, id=session_id)
     test_table_name = session.test_table_name
@@ -578,8 +582,8 @@ def test_edit_questions(request, session_id, test_id):
 
 @login_required
 def test_result(request, session_id, test_id):
-    if not request.user.is_teacher:
-        return render(request, 'base/404.html')
+    if request.user.is_teacher < 1:
+        render(request, 'base/404.html')
     
     session = get_object_or_404(ClassSession, id=session_id)
     students = session.students.all()
@@ -621,3 +625,19 @@ def test_result(request, session_id, test_id):
 
 
     return render(request, 'teacher/test_result.html', {'is_teacher': True, 'user': request.user, 'session': session, 'test_results': test_results})
+
+
+@login_required
+def test_activity_dashboard(request, session_id, test_id):
+    if request.user.is_teacher < 1:
+        render(request, 'base/404.html')
+    
+    context = {
+        'session_id': session_id,
+        'test_id': test_id,
+    }
+    return render(request, 'teacher/test_activity_dashboard.html', context)
+
+
+# @login_required
+# def notify(request, session_id):

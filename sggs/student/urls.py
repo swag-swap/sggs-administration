@@ -11,7 +11,7 @@ urlpatterns = [
     path('session/<int:session_id>/test/<int:test_id>/response/', views.submit_test_response, name='submit_test_response'),
     # path('edit/profile/', views.edit_profile, name='student_edit_profile'),
     # path('view/attendence/', views.view_attendence, name='student_view_attendence'),
-    # path('view/notifications/', views.view_notifications, name='student_view_notifications'),
+    path('view/notifications/', views.view_notifications, name='student_view_notifications'),
     # path('feedback/', views.feedback, name='student_feedback'), 
     path('mark/attendence/<int:session_id>', views.mark_attendance, name='student_mark_attendence'),
 ]

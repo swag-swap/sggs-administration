@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher Dashboard</title>
+    <script>
+document.addEventListener("DOMContentLoaded", function() {
+    const session_id = "{{ session_id }}";
+    const test_id = "{{ test_id }}";
+
+    // Use the correct WebSocket protocol
+    const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+    const socketUrl = wsProtocol + window.location.host + '/ws/session/' + session_id + '/test/' + test_id + '/activity/';
+
+    try {
+        const socket = new WebSocket(socketUrl);
+        console.log("Attempting to connect to WebSocket...");
+
+        socket.onopen = function() {
+            console.log("WebSocket connection established!");
+        };
+
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const message = data.message;
+            const activitiesDiv = document.getElementById("activities");
+            const p = document.createElement("p");
+            p.textContent = message;
+            activitiesDiv.appendChild(p);
+            console.log("Message received: ", message);
+        };
+
+        socket.onerror = function(error) {
+            console.error("WebSocket error: ", error);
+        };
+
+        socket.onclose = function(e) {
+            if (e.wasClean) {
+                console.log(`WebSocket closed cleanly, code=${e.code}, reason=${e.reason}`);
+            } else {
+                console.error('WebSocket connection closed unexpectedly');
+            }
+        };
+    } catch (error) {
+        console.error("Failed to connect to WebSocket: ", error);
+    }
+});
+
+    </script>
+</head>
+<body>
+    <h1>Teacher Dashboard</h1>
+    <div id="activities">
+        <h2>Student Activities</h2>
+    </div>
+</body>
+</html>

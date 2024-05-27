@@ -24,8 +24,9 @@ urlpatterns = [
     path('session/<int:session_id>/test/<int:test_id>/edit/questions/', views.test_edit_questions, name='teacher_test_edit_questions'),
     path('session/<int:session_id>/test/<int:test_id>/delete', views.test_delete, name='teacher_test_delete'),
     path('session/<int:session_id>/test/<int:test_id>/result/', views.test_result, name='teacher_test_result'),
+    path('session/<int:session_id>/test/<int:test_id>/activity/', views.test_activity_dashboard, name='teacher_test_activity_dashboard'),
 
-    # path('view/notifications/', views.view_notifications, name='teacher_view_notifications'),
+    # path('notify/', views.notify, name='teacher_notify'),
     # path('feedback/', views.feedback, name='teacher_feedback'), 
 
 ]

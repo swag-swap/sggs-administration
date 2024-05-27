@@ -133,7 +133,7 @@ def logout(request):
     <script>
         localStorage.clear();
         sessionStorage.clear();
-        cookies.clear();
+        // cookies.clear();
         window.location.href = "/";
     </script>
     </body>

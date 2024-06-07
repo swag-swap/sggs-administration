@@ -16,22 +16,22 @@ This website is the administration website for the SGGS college management. Ther
 - Staff has its specific role of doing things.
 
 ## Todo
-- [+] Registration
-- [+] Login     
-- [+] profile editing
-- [+] models for the admin, teacher, student
-- [+] Subject model, Test models, attendence models
-- [+] question making for the admin(like staff, teacher, etc)
-- [+] question taking steps (like for admin all stuffs)
-- [+] attendence page
-- [+] attendence showing
-- [+] Test making page
-- [+] Test page
-- [ ] Result show for teacher and student
-- [+] Library models
-- [+] Library Pages 
-- [ ] Edit Profile addtion
-- [ ] Notifications
+- [x] Registration
+- [x] Login     
+- [x] profile editing
+- [x] models for the admin, teacher, student
+- [x] Subject model, Test models, attendence models
+- [x] question making for the admin(like staff, teacher, etc)
+- [x] question taking steps (like for admin all stuffs)
+- [x] attendence page
+- [x] attendence showing
+- [x] Test making page
+- [x] Test page
+- [x] Result show for teacher and student
+- [x] Library models
+- [x] Library Pages 
+- [x] Edit Profile addtion
+- [x] Notifications
 
 
 
@@ -72,3 +72,19 @@ This website is the administration website for the SGGS college management. Ther
 8) Assignment Submission Notification:  
 9) Grading Notification: 
 10) System Maintenance Notification:
+
+## Images
+![1) home](./Images/1\)%20home.png)
+### Admin
+![Admin- 1) Add Admin From Excel](./Images/Admin-%201\)%20Add%20Admin%20From%20Excel.png)
+![Admin- 2) Added Admins](./Images/Admin-%202\)%20Added%20Admins.png)
+### Student
+![Student- 4) session details](./Images/Student-%204\)%20session%20details.png)
+![Student- 7) test giving](./Images/Student-%207\)%20test%20giving.png)
+![Student- 9) test_result](./Images/Student-%209\)%20test_result.png)
+### Teacher
+![Teacher- 5) Upload question from excel for subject](./Images/Teacher-%205\)%20Upload%20question%20from%20excel%20for%20subject.png)
+![Teacher- 6) Sessions](./Images/Teacher-%206\)%20Sessions.png)
+![Teacher- 9) Session tests](./Images/Teacher-%209\)%20Session%20tests.png)
+![Teacher- 11) test edit questions](./Images/Teacher-%2011\)%20test%20edit%20questions.png)
+![Teacher- 12) Test result](./Images/Teacher-%2012\)%20Test%20result.png)
